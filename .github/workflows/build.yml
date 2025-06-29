@@ -1,0 +1,49 @@
+name: Build .NET DLL
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+          
+    - name: Restore dependencies
+      run: dotnet restore DuckWorld-Offline.sln
+      
+    - name: Build solution
+      run: dotnet build DuckWorld-Offline.sln --configuration Release --no-restore
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: |
+          bin/Release/net35/*.dll
+          bin/Release/net35/*.pdb
+        retention-days: 30
+        
+    - name: Display build information
+      run: |
+        echo "Build completed successfully!"
+        echo "Generated artifacts:"
+        find bin/Release/net35/ -name "*.dll" -exec ls -la {} \;

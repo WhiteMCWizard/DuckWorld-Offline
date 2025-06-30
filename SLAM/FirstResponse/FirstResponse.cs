@@ -19,11 +19,10 @@ public class FirstResponse : MonoBehaviour
 	{
 		checkForExistingProcess();
 		SettingsView.InitializeSettings();
-		SaveManager.Instance.Load(
-			new BinarySaveDataProvider(
-				System.IO.Path.Combine(Application.persistentDataPath, "savegame.dat")
-			)
-		);
+
+		// Initialize the save system
+		EnsureSaveSystem();
+
 		UserProfile.GetCurrentProfileData(gotUserProfile);
 		yield return null;
 	}
@@ -71,5 +70,23 @@ public class FirstResponse : MonoBehaviour
 			}
 		};
 		GameEvents.Invoke(trackingEvent);
+	}
+
+	/// <summary>
+	/// Ensures a GameObject with SaveSerializer is present and not destroyed on load.
+	/// </summary>
+	public static void EnsureSaveSystem()
+	{
+		var existing = GameObject.FindObjectOfType<SaveSerializer>();
+		if (existing == null)
+		{
+			var go = new GameObject("SaveSystem");
+			go.AddComponent<SaveSerializer>();
+			GameObject.DontDestroyOnLoad(go);
+		}
+		else
+		{
+			GameObject.DontDestroyOnLoad(existing.gameObject);
+		}
 	}
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SLAM.BuildSystem;
+using SLAM.SaveSystem;
 using SLAM.Webservices;
 using UnityEngine;
 
@@ -59,22 +60,6 @@ public class TrackingListener : MonoBehaviour
 	private T buildHit<T>(Dictionary<string, object> arguments) where T : HitBuilder<T>, new()
 	{
 		T result = new T();
-		if (UserProfile.Current.CustomDimensions != null)
-		{
-			foreach (KeyValuePair<string, string> customDimension in UserProfile.Current.CustomDimensions)
-			{
-				if (customDimension.Key.Contains("dimension"))
-				{
-					int result2 = 0;
-					if (int.TryParse(customDimension.Key.Replace("dimension", string.Empty), out result2) && !result.GetCustomDimensions().ContainsKey(result2))
-					{
-						int dimensionNumber = result2;
-						string value = customDimension.Value;
-						result.SetCustomDimension(dimensionNumber, value);
-					}
-				}
-			}
-		}
 		if (arguments != null)
 		{
 			Dictionary<string, int> dictionary = new Dictionary<string, int>();

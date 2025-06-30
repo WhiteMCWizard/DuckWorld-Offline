@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using SLAM.Avatar;
 using SLAM.BuildSystem;
 using SLAM.Engine;
+using SLAM.SaveSystem;
 using UnityEngine;
 
 namespace SLAM.Webservices.ErrorReporting;

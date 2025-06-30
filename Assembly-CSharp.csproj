@@ -3,6 +3,7 @@
     <AssemblyName>Assembly-CSharp</AssemblyName>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <TargetFramework>net35</TargetFramework>
+    <WarningLevel>0</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>12.0</LangVersion>

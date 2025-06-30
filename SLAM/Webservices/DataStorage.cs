@@ -81,21 +81,4 @@ public static class DataStorage
 			}
 		});
 	}
-
-	public static void GetWebConfiguration(Action<WebConfiguration> callback, bool forceRefresh = false)
-	{
-		if (config != null && !forceRefresh && callback != null)
-		{
-			callback(config);
-			return;
-		}
-		ApiClient.GetWebConfiguration(delegate(WebConfiguration cnfg)
-		{
-			config = cnfg;
-			if (callback != null)
-			{
-				callback(config);
-			}
-		});
-	}
 }

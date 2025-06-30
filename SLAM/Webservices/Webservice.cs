@@ -61,10 +61,7 @@ public class Webservice : SingletonMonobehaviour<Webservice>
 		SessionID = sessionId;
 		if (!string.IsNullOrEmpty(token))
 		{
-			DataStorage.GetWebConfiguration(delegate(WebConfiguration c)
-			{
-				keepaliveInterval = c.KeepaliveInterval;
-			});
+			keepaliveInterval = 180;
 		}
 		if (persistent)
 		{

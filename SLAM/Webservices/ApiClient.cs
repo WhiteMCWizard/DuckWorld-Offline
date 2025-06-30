@@ -84,13 +84,11 @@ public static class ApiClient
 
 	private static string USER_KART_DETAIL_URL => API_URL + "/users/{0}/kart/{1}/";
 
-	private static string CONFIGURATION_URL => API_URL + "/configuration/";
-
 	private static string TIP_A_PARENT_URL => API_URL + "/send-mail/";
 
 	static ApiClient()
 	{
-		API_URL = ((!Debug.isDebugBuild) ? "https://www.duckworld.com/api/1.0" : "http://127.0.0.1:8000/api/1.0");
+		API_URL = "http://127.0.0.1:8000/api/1.0";
 		Dictionary<string, string> dictionary = new Dictionary<string, string>
 		{
 			{ "--localhost", "http://127.0.0.1:8000/api/1.0" },
@@ -111,11 +109,6 @@ public static class ApiClient
 				API_URL = (string)enumerator.Current;
 			}
 		}
-	}
-
-	public static WebRequest GetWebConfiguration(Action<WebConfiguration> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", CONFIGURATION_URL, callback);
 	}
 
 	public static WebRequest GetUserProfile(Action<UserProfile> callback)
@@ -597,35 +590,19 @@ public static class ApiClient
 
 	public static void OpenRegisterPage()
 	{
-		DataStorage.GetWebConfiguration(delegate(WebConfiguration config)
-		{
-			Application.OpenURL(config.RegisterUrl);
-		});
 	}
 
 	public static void OpenPropositionPage(int gameId)
 	{
-		DataStorage.GetWebConfiguration(delegate(WebConfiguration config)
-		{
-			string url = $"{config.PropositionUrl}#demo=levelID-{gameId}";
-			Application.OpenURL(url);
-		});
 	}
 
 	public static void OpenForgotPasswordPage()
 	{
-		DataStorage.GetWebConfiguration(delegate(WebConfiguration config)
-		{
-			Application.OpenURL(config.PasswordForgetUrl);
-		});
 	}
 
 	public static void OpenHelpPage()
 	{
-		DataStorage.GetWebConfiguration(delegate(WebConfiguration config)
-		{
-			Application.OpenURL(config.HelpUrl);
-		});
+		Application.OpenURL("https://github.com/WhiteMCWizard/DuckWorld-Offline/issues");
 	}
 
 	public static WebRequest TipAParent(string recipient, Action<bool> callback)

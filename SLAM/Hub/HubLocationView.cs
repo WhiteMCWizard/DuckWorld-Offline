@@ -55,15 +55,11 @@ public class HubLocationView : HubMarkerView
 
 	private int prevTouchCount;
 
-	private bool cheatsEnabled;
+	private bool cheatsEnabled = true;
 
 	protected override void Start()
 	{
 		base.Start();
-		DataStorage.GetWebConfiguration(delegate(WebConfiguration config)
-		{
-			cheatsEnabled = config.CheatsEnabled;
-		});
 	}
 
 	protected override void Update()

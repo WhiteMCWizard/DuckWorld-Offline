@@ -102,7 +102,7 @@ public abstract class GameController : ViewController
 
 	private float originalTimeScale = 1f;
 
-	private bool cheatsEnabled;
+	private bool cheatsEnabled = true;
 
 	public static Message ChallengeAccepted;
 
@@ -177,10 +177,6 @@ public abstract class GameController : ViewController
 			currentLocationInfo = locs.FirstOrDefault((Location l) => l.Games.Any((Game loc) => loc.Id == GameId));
 			currentGameInfo = currentLocationInfo.GetGame(GameId);
 			DataStorage.GetProgressionData(onProgressionDataLoaded);
-		});
-		DataStorage.GetWebConfiguration(delegate(WebConfiguration config)
-		{
-			cheatsEnabled = config.CheatsEnabled;
 		});
 		if ((bool)SingletonMonoBehaviour<AudioController>.DoesInstanceExist())
 		{

@@ -207,11 +207,6 @@ public static class ApiClient
 		});
 	}
 
-	public static WebRequest GetLocations(Action<Location[]> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", LOCATIONS_URL, callback);
-	}
-
 	public static WebRequest GetUserSpecificDetailsForGame(int gameId, Action<UserGameDetails> callback)
 	{
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(USER_GAME_URL, UserId, gameId), callback);

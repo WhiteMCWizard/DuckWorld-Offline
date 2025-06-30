@@ -33,11 +33,17 @@ jobs:
     - name: Build project
       run: dotnet build ./Assembly-CSharp.csproj --configuration Release --no-restore
 
+    - name: Copy output DLL
+      run: |
+        mkdir -p artifact
+        cp ./bin/Release/net35/Assembly-CSharp.dll artifact/
+        cp ./bin/Release/net35/Assembly-CSharp.pdb artifact/ || true
+    
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
         name: Assembly-CSharp-DLL
-        path: ./bin/Release/**/Assembly-CSharp.dll
+        path: artifact/*
         retention-days: 30
 
     - name: Display build output

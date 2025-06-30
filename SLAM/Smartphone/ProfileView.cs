@@ -19,10 +19,9 @@ public class ProfileView : AppView
 
 	public void SetData(UserProfile profile)
 	{
-		ApiClient.GetAvatarConfiguration(profile.Id, delegate(PlayerAvatarData avtrData)
-		{
-			txtrBodyshot.mainTexture = SingletonMonobehaviour<PhotoBooth>.Instance.StartFilming(avtrData.Config, PhotoBooth.Pose.Present);
-		});
+		var avatarConfig = SaveManager.Instance.GetSaveData().avatar.Config;
+		txtrBodyshot.mainTexture = SingletonMonobehaviour<PhotoBooth>.Instance.StartFilming(avatarConfig, PhotoBooth.Pose.Present);
+
 		lblName.text = profile.Name;
 		lblAddress.text = profile.Address;
 	}

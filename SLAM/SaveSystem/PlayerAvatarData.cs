@@ -1,8 +1,10 @@
+using System;
 using LitJson;
 using SLAM.Avatar;
 
-namespace SLAM.Webservices;
+namespace SLAM.SaveSystem;
 
+[Serializable]
 public class PlayerAvatarData
 {
 	[JsonName("mugshot")]

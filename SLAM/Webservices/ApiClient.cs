@@ -51,8 +51,6 @@ public static class ApiClient
 
 	private static string GHOST_URL2 => API_URL + "/users/{0}/ghosts/";
 
-	private static string AVATAR_URL => API_URL + "/users/{0}/avatar/";
-
 	private static string WALLET_URL => API_URL + "/users/{0}/wallet/";
 
 	private static string SHOP_URL => API_URL + "/shops/";
@@ -437,31 +435,6 @@ public static class ApiClient
 			return inp / num;
 		}
 		return inp;
-	}
-
-	public static WebRequest SaveAvatarConfiguration(AvatarConfigurationData avatarConfig, byte[] mugshot, Action<string> callback)
-	{
-		WWWForm wWWForm = new WWWForm();
-		avatarConfig.SkinColor.r = FixOutOfBoundsFloat(avatarConfig.SkinColor.r);
-		avatarConfig.SkinColor.g = FixOutOfBoundsFloat(avatarConfig.SkinColor.g);
-		avatarConfig.SkinColor.b = FixOutOfBoundsFloat(avatarConfig.SkinColor.b);
-		wWWForm.AddField("config", JsonMapper.ToJson(avatarConfig));
-		wWWForm.AddField("gender", avatarConfig.Gender.ToString());
-		wWWForm.AddField("race", avatarConfig.Race.ToString());
-		wWWForm.AddField("gameuser", UserId.ToString());
-		string hash = WebRequest.CalculateHash(wWWForm);
-		wWWForm.AddBinaryData("mugshot", mugshot);
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("PUT", string.Format(AVATAR_URL, UserId), hash, wWWForm, callback);
-	}
-
-	public static WebRequest GetAvatarConfiguration(Action<PlayerAvatarData> callback)
-	{
-		return GetAvatarConfiguration(UserId, callback);
-	}
-
-	public static WebRequest GetAvatarConfiguration(int uid, Action<PlayerAvatarData> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(AVATAR_URL, uid), callback);
 	}
 
 	public static WebRequest LoadMugshot(string url, Action<Texture2D> callback)

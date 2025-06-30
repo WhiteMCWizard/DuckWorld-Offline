@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
-using SLAM.SaveSystem; 
+using SLAM.SaveSystem;
+using SLAM.Avatar;
 
 namespace SLAM.SaveSystem;
 

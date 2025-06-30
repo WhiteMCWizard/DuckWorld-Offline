@@ -42,7 +42,7 @@ jobs:
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Assembly-CSharp-DLL
+        name: Assembly-CSharp
         path: artifact/*
         retention-days: 30
 

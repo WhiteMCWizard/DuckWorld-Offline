@@ -37,12 +37,10 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Assembly-CSharp-DLL
-        path: |
-          **/bin/Release/**/*.dll
-          **/bin/Release/**/*.pdb
+        path: ./bin/Release/**/Assembly-CSharp.dll
         retention-days: 30
 
     - name: Display build output
       run: |
         echo "Build completed successfully!"
-        find . -path "*/bin/Release/*.dll" -exec ls -la {} \;
+        find . -path "*/bin/Release/Assembly-CSharp.dll" -exec ls -la {} \;

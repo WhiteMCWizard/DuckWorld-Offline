@@ -19,17 +19,16 @@ public class LoginController : ViewController
 	{
 		base.Start();
 		OpenView<LoginView>().DemoButtonEnabled = false;
-		UpdateSystem.HasLatestVersion(delegate(bool hasLatest)
-		{
-			if (!hasLatest)
-			{
-				UpdateSystem.UpdateToLatestVersion();
-			}
-			DataStorage.GetWebConfiguration(delegate(WebConfiguration config)
-			{
-				GetView<LoginView>().DemoButtonEnabled = config.FreeplayerEnabled;
-			});
-		});
+		// Version checking and update system - removed as not currently needed
+		// May be re-implemented in the future
+		//
+		// UpdateSystem.HasLatestVersion(delegate(bool hasLatest)
+		// {
+		//     if (!hasLatest)
+		//     {
+		//         UpdateSystem.UpdateToLatestVersion();
+		//     }
+		// });
 	}
 
 	private void OnEnable()

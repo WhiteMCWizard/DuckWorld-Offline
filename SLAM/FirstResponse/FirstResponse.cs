@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using SLAM.Analytics;
 using SLAM.Avatar;
 using SLAM.BuildSystem;
+using SLAM.SaveSystem;
 using SLAM.Smartphone;
 using SLAM.Webservices;
 using UnityEngine;
@@ -18,34 +19,17 @@ public class FirstResponse : MonoBehaviour
 	{
 		checkForExistingProcess();
 		SettingsView.InitializeSettings();
-		UpdateSystem.HasLatestVersion(delegate(bool hasLatest)
-		{
-			if (hasLatest)
-			{
-				if (SingletonMonobehaviour<Webservice>.Instance.HasAuthenticationToken())
-				{
-					UserProfile.GetCurrentProfileData(gotUserProfile);
-				}
-				else
-				{
-					gotUserProfile(null);
-				}
-			}
-			else
-			{
-				UpdateSystem.UpdateToLatestVersion();
-			}
-		});
+		SaveManager.Instance.Load(
+			new BinarySaveDataProvider(
+				System.IO.Path.Combine(Application.persistentDataPath, "savegame.dat")
+			)
+		);
+		UserProfile.GetCurrentProfileData(gotUserProfile);
 		yield return null;
 	}
 
 	private void gotUserProfile(UserProfile profile)
 	{
-		if (profile == null)
-		{
-			SceneManager.Load("Login");
-			return;
-		}
 		AvatarSystem.LoadPlayerConfiguration();
 		SceneManager.Load("Hub", delegate
 		{

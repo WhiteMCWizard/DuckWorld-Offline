@@ -24,6 +24,13 @@ public class SettingsApp : AppController
 
 	public override void Open()
 	{
+		// enable language dropdown
+		var languageDropdown = GameObject.Find("Smartphone3D/3D UI Camera/Smartphone/Parent/UI Root/SettingsApp/SettingsView/Anchor Center/Scroll View/Grid/LanguageDropdown");
+		if (languageDropdown != null)
+		{
+			languageDropdown.SetActive(true);
+		}
+		
 		string version = "v" + SceneDataLibrary.GetSceneDataLibrary().GameVersion.ToString();
 		OpenView<SettingsView>().SetData(SingletonMonobehaviour<AudioManager>.Instance.MusicVolume, SingletonMonobehaviour<AudioManager>.Instance.SfxVolume, SingletonMonobehaviour<PerformanceManager>.Instance.CurrentQuality, version);
 	}

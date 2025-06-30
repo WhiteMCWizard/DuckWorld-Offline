@@ -14,6 +14,8 @@ namespace SLAM.SaveSystem
         {
             savePath = Path.Combine(Application.persistentDataPath, "savegame.dat");
             saveDataProvider = new BinarySaveDataProvider(savePath);
+            // Load save data at startup
+            SaveManager.Instance.Load(saveDataProvider);
         }
 
         private void Start()
@@ -38,6 +40,12 @@ namespace SLAM.SaveSystem
                 saveDataProvider.Save(manager.GetSaveData());
                 manager.MarkClean();
             }
+        }
+
+        private void OnApplicationQuit()
+        {
+            // Ensure data is saved on quit
+            TrySave();
         }
     }
 }

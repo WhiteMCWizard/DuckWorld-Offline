@@ -6,6 +6,7 @@ using SLAM.Avatar;
 using SLAM.BuildSystem;
 using SLAM.Engine;
 using SLAM.MotionComics._3D;
+using SLAM.SaveSystem;
 using SLAM.Slinq;
 using SLAM.Smartphone;
 using SLAM.Webservices;

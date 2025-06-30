@@ -5,6 +5,7 @@ using SLAM.Analytics;
 using SLAM.BuildSystem;
 using SLAM.Engine;
 using SLAM.Hub;
+using SLAM.SaveSystem;
 using SLAM.Shared;
 using SLAM.Slinq;
 using SLAM.Webservices;

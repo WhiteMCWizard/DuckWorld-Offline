@@ -24,7 +24,6 @@ namespace SLAM.SaveSystem
 
         public SaveData Load()
         {
-            Debug.Log($"Loading save data from {_filePath}");
             if (!File.Exists(_filePath))
                 return null;
 

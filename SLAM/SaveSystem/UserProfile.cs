@@ -1,35 +1,35 @@
 using System;
 using System.Collections.Generic;
 using LitJson;
+using SLAM.Webservices;
 using UnityEngine;
 
-namespace SLAM.Webservices;
+namespace SLAM.SaveSystem;
 
 [Serializable]
 public class UserProfile
 {
+	[NonSerialized]
 	private static Dictionary<string, Texture2D> imageCache = new Dictionary<string, Texture2D>();
 
 	[JsonName("id")]
-	public int Id;
+	public int Id = 0;
 
 	[JsonName("name")]
-	public string Name;
+	public string Name = "";
 
 	[JsonName("address")]
-	public string Address;
-
-	[JsonName("google_analytics")]
-	public Dictionary<string, string> CustomDimensions;
+	public string Address = "";
 
 	[JsonName("is_free")]
-	public bool IsFree;
+	public bool IsFree = false;
 
 	[JsonName("is_sa")]
-	public bool IsSA;
+	public bool IsSA = false;
 
-	private string _mugshotUrl;
+	private string _mugshotUrl = "";
 
+	[NonSerialized]
 	public Texture2D MugShot;
 
 	public static UserProfile Current { get; private set; }
@@ -74,17 +74,16 @@ public class UserProfile
 
 	public static void GetCurrentProfileData(Action<UserProfile> callback)
 	{
-		ApiClient.GetUserProfile(delegate(UserProfile prof)
+		if (SaveManager.Instance.IsLoaded)
 		{
-			if (prof != null)
-			{
-				Current = prof;
-			}
-			if (callback != null)
-			{
-				callback(Current);
-			}
-		});
+			Current = SaveManager.Instance.GetSaveData().profile;
+		}
+		else
+		{
+			Current = null;
+		}
+
+		callback?.Invoke(Current);
 	}
 
 	public static void UnsetCurrentProfileData()

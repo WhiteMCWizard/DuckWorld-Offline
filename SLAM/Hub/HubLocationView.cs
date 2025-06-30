@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using SLAM.Engine;
+using SLAM.SaveSystem;
 using SLAM.Shared;
 using SLAM.Slinq;
 using SLAM.Webservices;

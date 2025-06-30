@@ -1,1 +1,1 @@
-# DuckWorld-Offline
+# DuckWorld Offline

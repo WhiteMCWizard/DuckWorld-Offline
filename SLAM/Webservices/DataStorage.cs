@@ -46,11 +46,8 @@ public static class DataStorage
 			callback(locations);
 			return;
 		}
-		ApiClient.GetLocations(delegate(Location[] l)
-		{
-			locations = l;
-			callback(l);
-		});
+		locations = Locations.All;
+		callback(locations);
 	}
 
 	public static void GetGameById(int gameId, Action<Game> callback)

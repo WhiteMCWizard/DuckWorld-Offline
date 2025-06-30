@@ -38,11 +38,19 @@ public static class AvatarSystem
 	{
 		playerAvatarConfiguration = config;
 		UserProfile.Current.SetMugShot(mugshot);
-		ApiClient.SaveAvatarConfiguration(config, mugshot.EncodeToPNG(), null);
+
+		var saveData = SaveManager.Instance.GetSaveData();
+		saveData.avatar.Config = config;
+		// TODO: Save mugshot to save data
 	}
 
 	public static AvatarConfigurationData GetPlayerConfiguration()
 	{
+		if (playerAvatarConfiguration == null)
+		{
+			var saveData = SaveManager.Instance.GetSaveData();
+			playerAvatarConfiguration = saveData.avatar.Config;
+		}
 		return playerAvatarConfiguration;
 	}
 
@@ -53,13 +61,9 @@ public static class AvatarSystem
 
 	public static void LoadPlayerConfiguration()
 	{
-		if (playerAvatarConfiguration == null)
-		{
-			ApiClient.GetAvatarConfiguration(delegate(PlayerAvatarData pad)
-			{
-				playerAvatarConfiguration = pad?.Config;
-			});
-		}
+		// Load from offline SaveData
+		var saveData = SaveManager.Instance.GetSaveData();
+		playerAvatarConfiguration = saveData.avatar.Config;
 	}
 
 	public static GameObject SpawnPlayerAvatar()

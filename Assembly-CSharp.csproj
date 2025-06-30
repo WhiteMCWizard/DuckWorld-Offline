@@ -9,7 +9,6 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup />
-  <ItemGroup />
   <ItemGroup>
     <Reference Include="UnityEngine">
       <HintPath>lib/UnityEngine.dll</HintPath>

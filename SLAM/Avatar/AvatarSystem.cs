@@ -83,10 +83,6 @@ public static class AvatarSystem
 		{
 			playerAvatarConfiguration = data.Config;
 		}
-		else
-		{
-			playerAvatarConfiguration = LitJson.JsonMapper.ToObject<AvatarConfigurationData>(defaultConfigurationJson);
-		}
 	}
 
 	public static GameObject SpawnPlayerAvatar()

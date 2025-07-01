@@ -4,6 +4,7 @@ using UnityEngine;
 [AddComponentMenu("NGUI/Internal/Debug")]
 public class NGUIDebug : MonoBehaviour
 {
+	// Debug utility class for NGUI raycast debugging
 	private static bool mRayDebug = false;
 
 	private static List<string> mLines = new List<string>();

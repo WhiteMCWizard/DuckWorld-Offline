@@ -33,13 +33,9 @@ public static class ApiClient
 
 	private static string USER_FRIENDS_URL => API_URL + "/users/{0}/friends/";
 
-	private static string LOCATIONS_URL => API_URL + "/locations/";
-
 	private static string USER_GAME_URL => API_URL + "/users/{0}/games/{1}/";
 
 	private static string USER_GAME_SCENE_URL => API_URL + "/users/{0}/games/?scene={1}";
-
-	private static string USER_GAMES_URL => API_URL + "/users/{0}/games/";
 
 	private static string USER_JOBS_URL => API_URL + "/users/{0}/jobs/";
 
@@ -215,11 +211,6 @@ public static class ApiClient
 	public static WebRequest GetUserSpecificDetailsForGame(string sceneName, Action<UserGameDetails[]> callback)
 	{
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(USER_GAME_SCENE_URL, UserId, sceneName), callback);
-	}
-
-	public static WebRequest GetUserSpecificDetailsForAllGames(Action<UserGameDetails[]> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(USER_GAMES_URL, UserId, UserId), callback);
 	}
 
 	public static WebRequest GetUserSpecificDetailsForAllJobs(Action<Job[]> callback)
@@ -550,11 +541,6 @@ public static class ApiClient
 		wWWForm.AddField("progress", achievement.Progress.ToString());
 		wWWForm.AddField("completed", achievement.Completed.ToString());
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("PUT", string.Format(USER_ACHIEVEMENT_URL, UserId, achievement.Info.Id), wWWForm, callback);
-	}
-
-	public static WebRequest GetAchievements(Action<UserAchievement[]> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(USER_ACHIEVEMENTS_URL, UserId), callback);
 	}
 
 	public static void OpenRegisterPage()

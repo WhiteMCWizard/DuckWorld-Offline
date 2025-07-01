@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using SLAM.Analytics;
@@ -267,8 +268,6 @@ public class AchievementManager : SingletonMonobehaviour<AchievementManager>
 		}
 	};
 
-	private WebRequest achievementRequest;
-
 	public List<UserAchievement> Achievements { get; protected set; }
 
 	private void OnEnable()
@@ -281,27 +280,82 @@ public class AchievementManager : SingletonMonobehaviour<AchievementManager>
 		GameEvents.Unsubscribe<Webservice.LogoutEvent>(onLogout);
 	}
 
+	private UserAchievement[] CreateDefaultAchievements()
+	{
+		var defaultAchievements = new List<UserAchievement>();
+		
+		// Create a default achievement for each achievement ID
+		foreach (AchievementId achievementId in System.Enum.GetValues(typeof(AchievementId)))
+		{
+			var achievement = new UserAchievement
+			{
+				Info = new AchievementInfo
+				{
+					Id = (int)achievementId,
+					Name = $"achievement_{achievementId.ToString().ToLower()}",
+					Description = $"achievement_{achievementId.ToString().ToLower()}_description",
+					Hidden = false,
+					Target = targets.ContainsKey(achievementId) ? targets[achievementId] : 1
+				},
+				Progress = 0f,
+				Completed = false
+			};
+			defaultAchievements.Add(achievement);
+		}
+		
+		return defaultAchievements.ToArray();
+	}
+
+	private void SaveAchievementsToLocal()
+	{
+		if (SaveManager.Instance.IsLoaded && Achievements != null)
+		{
+			var saveData = SaveManager.Instance.GetSaveData();
+			saveData.userAchievements = Achievements.ToArray();
+			SaveManager.Instance.MarkDirty();
+		}
+	}
+
 	private IEnumerator Start()
 	{
-		Object.DontDestroyOnLoad(base.gameObject);
+		UnityEngine.Object.DontDestroyOnLoad(base.gameObject);
 		while (UserProfile.Current == null)
 		{
 			yield return null;
 		}
 		if (UserProfile.Current.IsFree)
 		{
-			Object.Destroy(base.gameObject);
+			UnityEngine.Object.Destroy(base.gameObject);
 			yield break;
 		}
-		achievementRequest = ApiClient.GetAchievements(delegate(UserAchievement[] result)
+		
+		// Wait for save system to be loaded
+		while (!SaveManager.Instance.IsLoaded)
 		{
-			Achievements = new List<UserAchievement>(result);
-			foreach (UserAchievement achievement in Achievements)
-			{
-				achievement.Info.Target = ((!targets.ContainsKey((AchievementId)achievement.Info.Id)) ? 1 : targets[(AchievementId)achievement.Info.Id]);
-			}
-			checkStartDuckworldAchievement();
-		});
+			yield return null;
+		}
+		
+		// Get achievements from local save data
+		var saveData = SaveManager.Instance.GetSaveData();
+		if (saveData.userAchievements == null || saveData.userAchievements.Length == 0)
+		{
+			// Create default achievements if none exist
+			Achievements = new List<UserAchievement>(CreateDefaultAchievements());
+			saveData.userAchievements = Achievements.ToArray();
+			SaveManager.Instance.MarkDirty();
+		}
+		else
+		{
+			Achievements = new List<UserAchievement>(saveData.userAchievements);
+		}
+		
+		// Set targets for all achievements
+		foreach (UserAchievement achievement in Achievements)
+		{
+			achievement.Info.Target = ((!targets.ContainsKey((AchievementId)achievement.Info.Id)) ? 1 : targets[(AchievementId)achievement.Info.Id]);
+		}
+		
+		checkStartDuckworldAchievement();
 		GameEvents.Subscribe<TrackingEvent>(onTrackingEvent);
 	}
 
@@ -316,55 +370,52 @@ public class AchievementManager : SingletonMonobehaviour<AchievementManager>
 
 	private void onLogout(Webservice.LogoutEvent evt)
 	{
-		Object.Destroy(base.gameObject);
+		UnityEngine.Object.Destroy(base.gameObject);
 	}
 
 	private void onTrackingEvent(TrackingEvent evt)
 	{
-		Webservice.WaitFor(delegate
+		if (evt.Type == TrackingEvent.TrackingType.GameWon)
 		{
-			if (evt.Type == TrackingEvent.TrackingType.GameWon)
-			{
-				int gameId = (int)evt.Arguments["GameId"];
-				float progress = (float)evt.Arguments["Progress"];
-				checkGameCompleteAchievement(gameId, progress);
-				checkJobCompleteAchievement(gameId);
-				checkAllAdventureGamesComplete();
-			}
-			else if (evt.Type == TrackingEvent.TrackingType.DuckcoinsEarned)
-			{
-				int num = (int)evt.Arguments["Amount"];
-				increaseProgress(AchievementId.EARN_COINS_EASY, num);
-				increaseProgress(AchievementId.EARN_COINS_MEDIUM, num);
-				increaseProgress(AchievementId.EARN_COINS_HARD, num);
-			}
-			else if (evt.Type == TrackingEvent.TrackingType.ItemBought)
-			{
-				string guid = (string)evt.Arguments["ItemGUID"];
-				checkBuyClothesAchievement(guid);
-			}
-			else if (evt.Type == TrackingEvent.TrackingType.FriendshipAccepted)
-			{
-				increaseProgressByOne(AchievementId.GET_FRIENDS_EASY);
-				increaseProgressByOne(AchievementId.GET_FRIENDS_MEDIUM);
-			}
-			else if (evt.Type == TrackingEvent.TrackingType.AvatarSaved)
-			{
-				complete(AchievementId.CUSTOMIZE_AVATAR);
-			}
-			else if (evt.Type == TrackingEvent.TrackingType.KartBoughtEvent)
-			{
-				increaseProgressByOne(AchievementId.CUSTOMIZE_KART);
-			}
-			else if (evt.Type == TrackingEvent.TrackingType.KartCustomizedEvent)
-			{
-				complete(AchievementId.CUSTOMIZE_KART);
-			}
-			else if (evt.Type == TrackingEvent.TrackingType.MotionComicOpened)
-			{
-				checkAdventureComplete((string)evt.Arguments["Game"]);
-			}
-		}, achievementRequest);
+			int gameId = (int)evt.Arguments["GameId"];
+			float progress = (float)evt.Arguments["Progress"];
+			checkGameCompleteAchievement(gameId, progress);
+			checkJobCompleteAchievement(gameId);
+			checkAllAdventureGamesComplete();
+		}
+		else if (evt.Type == TrackingEvent.TrackingType.DuckcoinsEarned)
+		{
+			int num = (int)evt.Arguments["Amount"];
+			increaseProgress(AchievementId.EARN_COINS_EASY, num);
+			increaseProgress(AchievementId.EARN_COINS_MEDIUM, num);
+			increaseProgress(AchievementId.EARN_COINS_HARD, num);
+		}
+		else if (evt.Type == TrackingEvent.TrackingType.ItemBought)
+		{
+			string guid = (string)evt.Arguments["ItemGUID"];
+			checkBuyClothesAchievement(guid);
+		}
+		else if (evt.Type == TrackingEvent.TrackingType.FriendshipAccepted)
+		{
+			increaseProgressByOne(AchievementId.GET_FRIENDS_EASY);
+			increaseProgressByOne(AchievementId.GET_FRIENDS_MEDIUM);
+		}
+		else if (evt.Type == TrackingEvent.TrackingType.AvatarSaved)
+		{
+			complete(AchievementId.CUSTOMIZE_AVATAR);
+		}
+		else if (evt.Type == TrackingEvent.TrackingType.KartBoughtEvent)
+		{
+			increaseProgressByOne(AchievementId.CUSTOMIZE_KART);
+		}
+		else if (evt.Type == TrackingEvent.TrackingType.KartCustomizedEvent)
+		{
+			complete(AchievementId.CUSTOMIZE_KART);
+		}
+		else if (evt.Type == TrackingEvent.TrackingType.MotionComicOpened)
+		{
+			checkAdventureComplete((string)evt.Arguments["Game"]);
+		}
 	}
 
 	private void checkAdventureComplete(string gameName)
@@ -550,7 +601,8 @@ public class AchievementManager : SingletonMonobehaviour<AchievementManager>
 		if (!Mathf.Approximately(progress, achievement.Progress))
 		{
 			achievement.Progress = progress;
-			ApiClient.SetAchievementProgress(achievement, null);
+			// Save to local storage instead of API
+			SaveAchievementsToLocal();
 		}
 		if (completed != achievement.Completed)
 		{

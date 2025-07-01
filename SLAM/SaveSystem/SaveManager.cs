@@ -1,7 +1,5 @@
-using UnityEngine;
 using System;
-using SLAM.SaveSystem;
-using SLAM.Avatar;
+using UnityEngine;
 
 namespace SLAM.SaveSystem;
 
@@ -10,56 +8,63 @@ public class SaveManager
     private static SaveManager _instance;
     public static SaveManager Instance => _instance ??= new SaveManager();
 
-    private SaveData _saveData = null;
-    public bool IsLoaded { get; private set; } = false;
-    public bool IsDirty { get; private set; } = false;
+    public event Action OnDataLoaded;
+
+    private SaveData _saveData;
+    private ISaveDataProvider saveDataProvider;
+    public bool IsLoaded { get; private set; }
+    public bool IsDirty { get; private set; }
 
     private SaveManager() { }
 
-    public void Load(ISaveDataProvider provider)
+    public void Initialize(ISaveDataProvider provider)
     {
-        if (IsLoaded)
+        if (saveDataProvider != null)
+        {
+            Debug.LogWarning("SaveManager is already initialized.");
             return;
+        }
+        saveDataProvider = provider;
+        Load();
+    }
 
-        _saveData = provider.Load();
+    private void Load()
+    {
+        _saveData = saveDataProvider.Load();
         if (_saveData == null)
         {
-            InitializeNewSaveData();
+            _saveData = new SaveData();
+            Debug.Log("No save data found, creating new save data.");
+            IsDirty = true; // New data should be saved at least once.
         }
         IsLoaded = true;
+        OnDataLoaded?.Invoke();
     }
 
-    private void EnsureLoaded()
+    public void Save()
     {
-        if (!IsLoaded)
-            throw new InvalidOperationException("SaveManager not loaded. Call Load() first.");
-    }
-
-    public void InitializeNewSaveData()
-    {
-        _saveData = new SaveData();
-        IsDirty = true;
+        if (saveDataProvider != null && IsDirty)
+        {
+            saveDataProvider.Save(_saveData);
+            IsDirty = false;
+        }
     }
 
     public SaveData GetSaveData()
     {
-        EnsureLoaded();
+        if (!IsLoaded)
+        {
+            Debug.LogError("Save data is not loaded yet!");
+            return null;
+        }
         return _saveData;
     }
 
-    public void SetSaveData(SaveData data)
+    public void MarkDirty()
     {
-        _saveData = data;
-        IsDirty = true;
-    }
-
-    public void MarkClean()
-    {
-        IsDirty = false;
-    }
-
-    public void Close()
-    {
-        IsLoaded = false;
+        if (IsLoaded)
+        {
+            IsDirty = true;
+        }
     }
 }

@@ -32,6 +32,11 @@ public class MessagingApp : AppController
 	protected override void Start()
 	{
 		base.Start();
+		// Load messages initially
+		if (SaveManager.Instance.IsLoaded)
+		{
+			LoadMessagesFromLocal();
+		}
 		InvokeRepeating("refreshNotifications", 0f, 10f);
 	}
 
@@ -47,115 +52,120 @@ public class MessagingApp : AppController
 
 	public override void Open()
 	{
-		OpenTempView<LoadingView>();
-		Webservice.WaitFor(onMessagesAndMugshotsRecieved, from m in allMessages
-			select m.Sender.MugShotUrl into mugshoturl
-			where !string.IsNullOrEmpty(mugshoturl)
-			select mugshoturl);
+		LoadMessagesFromLocal();
+		OpenView<InboxView>().SetData(allMessages);
 	}
-
-	private void onMessagesAndMugshotsRecieved()
-	{
-		if (IsViewOpen<LoadingView>())
-		{
-			CloseTempView<LoadingView>();
-			OpenView<InboxView>().SetData(allMessages);
-		}
-	}
-
-	public void CloseFriendRequest(Message message, bool accepted)
-	{
-		if (accepted)
-		{
-			ApiClient.AcceptFriendRequest(message.Id, delegate
-			{
-				DataStorage.GetFriends(null, forceRefresh: true);
-				GameEvents.Invoke(new TrackingEvent
-				{
-					Type = TrackingEvent.TrackingType.FriendshipAccepted,
-					Arguments = new Dictionary<string, object>
-					{
-						{
-							"Sender",
-							message.Sender.Id
-						},
-						{
-							"Recipient",
-							ApiClient.UserId
-						}
-					}
-				});
-			});
-		}
-		else
-		{
-			TrackingEvent trackingEvent = new TrackingEvent();
-			trackingEvent.Type = TrackingEvent.TrackingType.FriendshipRejected;
-			trackingEvent.Arguments = new Dictionary<string, object>
-			{
-				{
-					"Sender",
-					message.Sender.Id
-				},
-				{
-					"Recipient",
-					ApiClient.UserId
-				}
-			};
-			GameEvents.Invoke(trackingEvent);
-		}
-		archiveMessage(message);
-	}
-
-	public void CloseChallengeRequest(Message message, bool accepted)
-	{
-		if (accepted)
-		{
-			GameController.ChallengeAccepted = message;
-			SceneManager.Load(message.Game.SceneName);
-			Close();
-			return;
-		}
-		TrackingEvent trackingEvent = new TrackingEvent();
-		trackingEvent.Type = TrackingEvent.TrackingType.ChallengeRejected;
-		trackingEvent.Arguments = new Dictionary<string, object>
-		{
-			{
-				"Sender",
-				message.Sender.Id
-			},
-			{
-				"Recipient",
-				ApiClient.UserId
-			},
-			{
-				"GameId",
-				message.Game.Id
-			},
-			{ "Difficulty", message.Difficulty }
-		};
-		GameEvents.Invoke(trackingEvent);
-		ApiClient.DeleteMessage(message.Id, null);
-	}
-
+	
 	protected override void checkForNotifications(Action<AppChangedEvent> eventCallback)
 	{
 		if (UserProfile.Current.IsFree)
 		{
 			return;
 		}
-		ApiClient.GetAllMessages(delegate(Message[] messages)
+
+		// Get messages from local storage instead of API
+		LoadMessagesFromLocal();
+
+		unreadMessages = allMessages.Where((Message m) => !m.Archived && m.Type != Message.MessageType.JobNotification).ToList();
+		if (unreadMessages.Count > 0)
 		{
-			unreadMessages = messages.Where((Message m) => !m.Archived && m.Type != Message.MessageType.JobNotification).ToList();
-			allMessages = messages.Where((Message m) => m.Type != Message.MessageType.JobNotification).ToList();
-			if (unreadMessages.Count > 0)
+			eventCallback(new AppChangedEvent
 			{
-				eventCallback(new AppChangedEvent
-				{
-					App = this
-				});
+				App = this
+			});
+		}
+	}
+
+	private void LoadMessagesFromLocal()
+	{
+		if (SaveManager.Instance.IsLoaded)
+		{
+			var saveData = SaveManager.Instance.GetSaveData();
+			if (saveData.messages != null && saveData.messages.Length > 0)
+			{
+				allMessages = saveData.messages.Where((Message m) => m.Type != Message.MessageType.JobNotification).ToList();
 			}
-		});
+			else
+			{
+				CreateDefaultMessagesIfNeeded();
+				allMessages = saveData.messages?.Where((Message m) => m.Type != Message.MessageType.JobNotification).ToList() ?? new List<Message>();
+			}
+		}
+		else
+		{
+			allMessages = new List<Message>();
+		}
+	}
+
+	private void SaveMessagesToLocal()
+	{
+		if (SaveManager.Instance.IsLoaded)
+		{
+			var saveData = SaveManager.Instance.GetSaveData();
+			saveData.messages = allMessages.ToArray();
+			SaveManager.Instance.MarkDirty();
+		}
+	}
+
+	private void CreateDefaultMessagesIfNeeded()
+	{
+		if (SaveManager.Instance.IsLoaded)
+		{
+			var saveData = SaveManager.Instance.GetSaveData();
+			if (saveData.messages == null || saveData.messages.Length == 0)
+			{
+				// Create some default messages for demonstration
+				var defaultMessages = new List<Message>();
+				
+				// Add a welcome message
+				var welcomeMessage = new Message
+				{
+					Id = 1,
+					Type = Message.MessageType.Notification,
+					Sender = new UserProfile { Name = "System", Id = 0 },
+					MessageBody = "Test",
+					Archived = false,
+					dateCreated = DateTime.Now.ToString(),
+					dateModified = DateTime.Now.ToString()
+				};
+				defaultMessages.Add(welcomeMessage);
+				
+				saveData.messages = defaultMessages.ToArray();
+				SaveManager.Instance.MarkDirty();
+				allMessages = defaultMessages;
+			}
+		}
+	}
+
+	public void AddMessage(Message message)
+	{
+		if (message == null) return;
+		
+		LoadMessagesFromLocal();
+		
+		// Assign a unique ID if not set
+		if (message.Id == 0)
+		{
+			int maxId = 0;
+			foreach (var m in allMessages)
+			{
+				if (m.Id > maxId) maxId = m.Id;
+			}
+			message.Id = maxId + 1;
+		}
+		
+		// Set creation and modification dates if not set
+		if (string.IsNullOrEmpty(message.dateCreated))
+		{
+			message.dateCreated = DateTime.Now.ToString();
+		}
+		if (string.IsNullOrEmpty(message.dateModified))
+		{
+			message.dateModified = DateTime.Now.ToString();
+		}
+		
+		allMessages.Add(message);
+		SaveMessagesToLocal();
 	}
 
 	private void onOpenMessageRequest(OpenMessageEvent evt)
@@ -170,28 +180,6 @@ public class MessagingApp : AppController
 			openNotification(evt.Message);
 			archiveMessage(evt.Message);
 			break;
-		case Message.MessageType.FriendConfirmed:
-			openFriendConfirmed(evt.Message);
-			archiveMessage(evt.Message);
-			break;
-		case Message.MessageType.FriendRequest:
-			openFriendRequest(evt.Message);
-			break;
-		case Message.MessageType.Challenge:
-			if (evt.Message.ScoreRecipient == 0)
-			{
-				openChallenge(evt.Message);
-			}
-			else
-			{
-				openChallengeResult(evt.Message);
-			}
-			archiveMessage(evt.Message);
-			break;
-		case Message.MessageType.ChallengeResult:
-			openChallengeResult(evt.Message);
-			archiveMessage(evt.Message);
-			break;
 		case Message.MessageType.UrlMessage:
 			openUrlMessage(evt.Message);
 			archiveMessage(evt.Message);
@@ -201,11 +189,13 @@ public class MessagingApp : AppController
 
 	private void archiveMessage(Message message)
 	{
-		if (!message.Archived && message.Type != Message.MessageType.JobNotification && message.Type != Message.MessageType.GlobalNotification)
-		{
-			ApiClient.ArchiveMessage(message.Id, null);
-		}
 		message.Archived = true;
+		if (message.Type != Message.MessageType.JobNotification && message.Type != Message.MessageType.GlobalNotification)
+		{
+			// Save to local storage instead of API
+			SaveMessagesToLocal();
+		}
+		
 		Message message2 = unreadMessages.FirstOrDefault((Message m) => m.Id == message.Id);
 		if (message2 != null && unreadMessages.Contains(message2))
 		{
@@ -228,72 +218,6 @@ public class MessagingApp : AppController
 		string localizationFormatted = StringFormatter.GetLocalizationFormatted("SF_MESSAGING_TITLE_NOTIFICATION", m.Sender.Name);
 		string messageBody = m.MessageBody;
 		OpenView<InboxItemView>().SetData(localizationFormatted, messageBody, m, null, null);
-	}
-
-	private void openChallenge(Message m)
-	{
-		string title = Localization.Get("SF_MESSAGING_TITLE_CHALLENGE");
-		string body = StringFormatter.GetLocalizationFormatted("SF_MESSAGING_BODY_CHALLENGE", m.Sender.Name, Localization.Get(m.Game.Name), m.ScoreSender);
-		OpenView<InboxItemView>().SetData(title, body, m, null, null);
-		DataStorage.GetProgressionData(delegate(UserGameDetails[] ugd)
-		{
-			if (IsViewOpen<InboxItemView>())
-			{
-				if (ugd.Any((UserGameDetails g) => g.GameId == m.Game.Id && g.Progression.Any((UserGameProgression prg) => prg.LevelIndex == m.Difficulty)))
-				{
-					GetView<InboxItemView>().SetData(title, body, m, delegate
-					{
-						CloseChallengeRequest(m, accepted: true);
-					}, delegate
-					{
-						CloseChallengeRequest(m, accepted: false);
-					});
-				}
-				else
-				{
-					body = StringFormatter.GetLocalizationFormatted("SF_MESSAGING_BODY_CHALLENGE_LOCKED", m.Sender.Name, Localization.Get(m.Game.Name), m.Difficulty + 1);
-					GetView<InboxItemView>().SetData(title, body, m, null, null);
-				}
-			}
-		});
-	}
-
-	private void openFriendConfirmed(Message m)
-	{
-		string localizationFormatted = StringFormatter.GetLocalizationFormatted("SF_MESSAGING_TITLE_FRIENDCONFIRMED", m.Sender.Name);
-		string localizationFormatted2 = StringFormatter.GetLocalizationFormatted("SF_MESSAGING_BODY_FRIENDCONFIRMED", m.Sender.Name);
-		OpenView<InboxItemView>().SetData(localizationFormatted, localizationFormatted2, m, null, null);
-	}
-
-	private void openChallengeResult(Message m)
-	{
-		string title = Localization.Get("SF_MESSAGING_TITLE_CHALLENGERESULT");
-		string localizationFormatted = StringFormatter.GetLocalizationFormatted((!m.HasRecipientWon()) ? "SF_MESSAGING_BODY_CHALLENGERESULT_LOST" : "SF_MESSAGING_BODY_CHALLENGERESULT_VICTORY", m.Sender.Name, Localization.Get(m.Game.Name), m.ScoreRecipient, m.ScoreSender);
-		if (m.WasGameTie())
-		{
-			localizationFormatted = StringFormatter.GetLocalizationFormatted("SF_MESSAGING_BODY_CHALLENGERESULT_TIE", m.Sender.Name, Localization.Get(m.Game.Name), m.ScoreRecipient);
-		}
-		OpenView<InboxItemView>().SetData(title, localizationFormatted, m, null, null);
-	}
-
-	private void openFriendRequest(Message m)
-	{
-		string localizationFormatted = StringFormatter.GetLocalizationFormatted("SF_MESSAGING_TITLE_FRIENDREQUEST");
-		string localizationFormatted2 = StringFormatter.GetLocalizationFormatted("SF_MESSAGING_BODY_FRIENDREQUEST", m.Sender.Name, m.Sender.Address);
-		if (!m.Archived)
-		{
-			OpenView<InboxItemView>().SetData(localizationFormatted, localizationFormatted2, m, delegate
-			{
-				CloseFriendRequest(m, accepted: true);
-			}, delegate
-			{
-				CloseFriendRequest(m, accepted: false);
-			});
-		}
-		else
-		{
-			OpenView<InboxItemView>().SetData(localizationFormatted, localizationFormatted2, m, null, null);
-		}
 	}
 
 	private void openUrlMessage(Message message)

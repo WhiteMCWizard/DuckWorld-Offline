@@ -11,6 +11,7 @@ namespace SLAM.SaveSystem
         public PlayerAvatarData avatar = new PlayerAvatarData();
         public UserGameDetails[] userGameDetails = new UserGameDetails[0];
         public UserAchievement[] userAchievements = new UserAchievement[0];
+        public Message[] messages = new Message[0];
         // Add more fields here as needed for future data
     }
 }

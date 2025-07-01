@@ -1,7 +1,9 @@
+using System;
 using LitJson;
 
 namespace SLAM.Webservices;
 
+[Serializable]
 public class UserGameProgression
 {
 	[JsonName("difficulty")]

@@ -2,6 +2,7 @@ using SLAM.Avatar;
 using SLAM.BuildSystem;
 using SLAM.Engine;
 using SLAM.MotionComics._3D;
+using SLAM.SaveSystem;
 using SLAM.Slinq;
 using SLAM.Webservices;
 using UnityEngine;
@@ -171,22 +172,38 @@ public class AvatarCreatorController : ViewController
 		string playerAddress = Localization.Get("AC_STREETNAMES").Split(',').GetRandom();
 		SingletonMonobehaviour<PhotoBooth>.Instance.SayCheese(playerConfig, delegate(Texture2D mugshot)
 		{
-			ApiClient.SavePlayerName(playername, playerAddress, delegate
+			// Save player name and address locally instead of using API
+			if (SaveManager.Instance.IsLoaded)
 			{
-				AvatarSystem.SavePlayerConfiguration(playerConfig, mugshot);
-				ApiClient.GetAllShopItems(delegate(ShopItemData[] allShopItems)
+				var saveData = SaveManager.Instance.GetSaveData();
+				saveData.profile.Name = playername;
+				saveData.profile.Address = playerAddress;
+				SaveManager.Instance.MarkDirty();
+				
+				// Update current profile reference by calling GetCurrentProfileData
+				UserProfile.GetCurrentProfileData(delegate(UserProfile profile)
 				{
-					AvatarConfigurationData defaultItems = (AvatarConfigurationData)AvatarItemLibrary.GetItemLibrary(playerConfig).DefaultConfigurations.First().Clone();
-					int[] shopItemIds = (from si in allShopItems
-						where playerConfig.Items.Contains(si.GUID) || defaultItems.Items.Contains(si.GUID)
-						select si.Id).ToArray();
-					ApiClient.AddItemsToInventory(shopItemIds, delegate
+					// Profile is now updated, continue with the flow
+					AvatarSystem.SavePlayerConfiguration(playerConfig, mugshot);
+					ApiClient.GetAllShopItems(delegate(ShopItemData[] allShopItems)
 					{
-						MotionComicPlayer.SetSceneToLoad("Hub");
-						SceneManager.Load("MC_ADV00_01_Intro");
+						AvatarConfigurationData defaultItems = (AvatarConfigurationData)AvatarItemLibrary.GetItemLibrary(playerConfig).DefaultConfigurations.First().Clone();
+						int[] shopItemIds = (from si in allShopItems
+							where playerConfig.Items.Contains(si.GUID) || defaultItems.Items.Contains(si.GUID)
+							select si.Id).ToArray();
+						ApiClient.AddItemsToInventory(shopItemIds, delegate
+						{
+							MotionComicPlayer.SetSceneToLoad("Hub");
+							SceneManager.Load("MC_ADV00_01_Intro");
+						});
 					});
 				});
-			});
+			}
+			else
+			{
+				Debug.LogError("SaveManager is not loaded. Cannot save player configuration.");
+				loadingView.Close();
+			}
 		});
 	}
 

@@ -1,9 +1,11 @@
+using System;
 using LitJson;
 using SLAM.Engine;
 using SLAM.Slinq;
 
 namespace SLAM.Webservices;
 
+[Serializable]
 public class Game
 {
 	public enum GameType

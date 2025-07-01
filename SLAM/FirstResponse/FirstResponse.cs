@@ -29,7 +29,6 @@ public class FirstResponse : MonoBehaviour
 
 	private void gotUserProfile(UserProfile profile)
 	{
-		AvatarSystem.LoadPlayerConfiguration();
 		SceneManager.Load("Hub", delegate
 		{
 			trackLoadComplete();

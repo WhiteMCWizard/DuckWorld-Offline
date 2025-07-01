@@ -2,50 +2,35 @@ using UnityEngine;
 using System.Collections;
 using System.IO;
 
-namespace SLAM.SaveSystem
+namespace SLAM.SaveSystem;
+
+public class SaveSerializer : MonoBehaviour
 {
-    public class SaveSerializer : MonoBehaviour
+    private float saveInterval = 20f;
+
+    private void Awake()
     {
-        private float saveInterval = 20f;
-        private ISaveDataProvider saveDataProvider;
-        private string savePath;
+        string savePath = Path.Combine(Application.persistentDataPath, "savegame.dat");
+        ISaveDataProvider saveDataProvider = new BinarySaveDataProvider(savePath);
+        SaveManager.Instance.Initialize(saveDataProvider);
+    }
 
-        private void Awake()
-        {
-            savePath = Path.Combine(Application.persistentDataPath, "savegame.dat");
-            saveDataProvider = new BinarySaveDataProvider(savePath);
-            // Load save data at startup
-            SaveManager.Instance.Load(saveDataProvider);
-        }
+    private void Start()
+    {
+        StartCoroutine(AutoSaveRoutine());
+    }
 
-        private void Start()
+    private IEnumerator AutoSaveRoutine()
+    {
+        while (true)
         {
-            StartCoroutine(AutoSaveRoutine());
+            yield return new WaitForSeconds(saveInterval);
+            SaveManager.Instance.Save();
         }
+    }
 
-        private IEnumerator AutoSaveRoutine()
-        {
-            while (true)
-            {
-                yield return new WaitForSeconds(saveInterval);
-                TrySave();
-            }
-        }
-
-        private void TrySave()
-        {
-            var manager = SaveManager.Instance;
-            if (manager.IsDirty)
-            {
-                saveDataProvider.Save(manager.GetSaveData());
-                manager.MarkClean();
-            }
-        }
-
-        private void OnApplicationQuit()
-        {
-            // Ensure data is saved on quit
-            TrySave();
-        }
+    private void OnApplicationQuit()
+    {
+        SaveManager.Instance.Save();
     }
 }

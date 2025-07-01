@@ -29,14 +29,14 @@ public static class DataStorage
 			callback(userProgressionInfo);
 			return;
 		}
-		ApiClient.GetUserSpecificDetailsForAllGames(delegate(UserGameDetails[] ugd)
+		
+		// Get progression data from local save instead of API
+		var saveData = SaveManager.Instance.GetSaveData();
+		userProgressionInfo = saveData != null ? saveData.userGameDetails : new UserGameDetails[0];
+		if (callback != null)
 		{
-			userProgressionInfo = ugd;
-			if (callback != null)
-			{
-				callback(userProgressionInfo);
-			}
-		});
+			callback(userProgressionInfo);
+		}
 	}
 
 	public static void GetLocationsData(Action<Location[]> callback)

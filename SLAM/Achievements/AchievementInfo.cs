@@ -1,7 +1,9 @@
+using System;
 using LitJson;
 
 namespace SLAM.Achievements;
 
+[Serializable]
 public class AchievementInfo
 {
 	[JsonName("id")]

@@ -34,22 +34,34 @@ public static class AvatarSystem
 
 	private static AvatarConfigurationData playerAvatarConfiguration;
 
+	static AvatarSystem()
+	{
+		SaveManager.Instance.OnDataLoaded += LoadPlayerConfiguration;
+	}
+
 	public static void SavePlayerConfiguration(AvatarConfigurationData config, Texture2D mugshot)
 	{
 		playerAvatarConfiguration = config;
-		UserProfile.Current.SetMugShot(mugshot);
+		if(UserProfile.Current != null) UserProfile.Current.SetMugShot(mugshot);
 
-		var saveData = SaveManager.Instance.GetSaveData();
-		saveData.avatar.Config = config;
-		// TODO: Save mugshot to save data
+		var avatarData = PlayerAvatarData.Current;
+		if (avatarData != null)
+		{
+			avatarData.Config = config;
+			// TODO: Save mugshot to save data
+			PlayerAvatarData.SetCurrentAvatarData(avatarData);
+		}
+		else
+		{
+			Debug.LogWarning("PlayerAvatarData.Current is null. SaveManager may not be loaded yet.");
+		}
 	}
 
 	public static AvatarConfigurationData GetPlayerConfiguration()
 	{
 		if (playerAvatarConfiguration == null)
 		{
-			var saveData = SaveManager.Instance.GetSaveData();
-			playerAvatarConfiguration = saveData.avatar.Config;
+			LoadPlayerConfiguration();
 		}
 		return playerAvatarConfiguration;
 	}
@@ -61,9 +73,20 @@ public static class AvatarSystem
 
 	public static void LoadPlayerConfiguration()
 	{
+		if (!SaveManager.Instance.IsLoaded)
+        {
+            Debug.LogWarning("AvatarSystem.LoadPlayerConfiguration called before SaveManager was loaded. This may result in using default avatar.");
+        }
 		// Load from offline SaveData
-		var saveData = SaveManager.Instance.GetSaveData();
-		playerAvatarConfiguration = saveData.avatar.Config;
+		var data = PlayerAvatarData.Current;
+		if (data != null && data.Config != null)
+		{
+			playerAvatarConfiguration = data.Config;
+		}
+		else
+		{
+			playerAvatarConfiguration = LitJson.JsonMapper.ToObject<AvatarConfigurationData>(defaultConfigurationJson);
+		}
 	}
 
 	public static GameObject SpawnPlayerAvatar()

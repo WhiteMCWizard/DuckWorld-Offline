@@ -2,7 +2,7 @@ using LitJson;
 using SLAM.Webservices;
 using System.Collections.Generic;
 
-public class ShopItems
+public class FashionStoreItems
 {
     public static ShopItemData[] All => CombineAll();
 

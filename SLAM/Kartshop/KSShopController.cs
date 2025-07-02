@@ -2,6 +2,7 @@ using SLAM.Analytics;
 using SLAM.BuildSystem;
 using SLAM.Engine;
 using SLAM.Kart;
+using SLAM.SaveSystem;
 using SLAM.Shops;
 using SLAM.Slinq;
 using SLAM.Webservices;
@@ -150,9 +151,11 @@ public class KSShopController : ViewController
 
 	private void onInventoryRetrieved()
 	{
-		ApiClient.GetWalletTotal(delegate(int total)
+		if (SaveManager.Instance.IsLoaded)
 		{
-			cashInWallet = total;
+			// Get wallet total from local save data
+			cashInWallet = SaveManager.Instance.GetSaveData().walletTotal;
+			
 			CloseView<LoadingView>();
 			previewKart = selectedKart.Clone() as KartConfigurationData;
 			spawnConfiguration(previewKart);
@@ -163,7 +166,12 @@ public class KSShopController : ViewController
 			inventory.ClearCart();
 			syncShop();
 			syncShoppingBasket();
-		});
+		}
+		else
+		{
+			Debug.LogError("SaveManager is not loaded. Cannot retrieve wallet total.");
+			CloseView<LoadingView>();
+		}
 	}
 
 	private void onCategoryClicked(KSShopCategoryClickedEvent evt)

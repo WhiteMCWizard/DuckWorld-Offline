@@ -185,7 +185,7 @@ public class AvatarCreatorController : ViewController
 				{
 					AvatarSystem.SavePlayerConfiguration(playerConfig, mugshot);
 					AvatarConfigurationData defaultItems = (AvatarConfigurationData)AvatarItemLibrary.GetItemLibrary(playerConfig).DefaultConfigurations.First().Clone();
-					int[] shopItemIds = (from si in ShopItems.All
+					int[] shopItemIds = (from si in AllShops.AllItems
 						where playerConfig.Items.Contains(si.GUID) || defaultItems.Items.Contains(si.GUID)
 						select si.Id).ToArray();
 					

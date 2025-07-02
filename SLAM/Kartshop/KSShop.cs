@@ -93,11 +93,8 @@ public class KSShop : MonoBehaviour
 
 	public virtual void RetrieveInventory(Action ready)
 	{
-		ApiClient.GetShopItems(filter.ShopId, delegate(ShopData shopData)
-		{
-			rawShopData = shopData;
-			processShopItems(filter, rawShopData.Items, ready);
-		});
+		rawShopData = AllShops.Kartshop;
+		processShopItems(filter, rawShopData.Items, ready);
 	}
 
 	public void AddToCart(KSShopItemDefinition item)
@@ -214,7 +211,7 @@ public class KSShop : MonoBehaviour
 				ApiClient.AddToWallet(-price, delegate
 				{
 					List<int> list = new List<int>();
-					list.AddRange(from si in ShopItems.All
+					list.AddRange(from si in AllShops.AllItems
 						where kart.HasItem(si.GUID)
 						select si.Id);
 					

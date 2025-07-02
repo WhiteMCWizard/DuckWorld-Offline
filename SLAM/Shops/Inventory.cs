@@ -46,14 +46,11 @@ public class Inventory : MonoBehaviour
 	{
 		if (filter.OnlyShowBoughtItems)
 		{
-			processShopItems(filter, ShopItems.All, ready);
+			processShopItems(filter, AllShops.AllItems, ready);
 		}
 		else
 		{
-			ApiClient.GetShopItems(filter.ShopId, delegate(ShopData shopData)
-			{
-				processShopItems(filter, shopData.Items, ready);
-			});
+			processShopItems(filter, AllShops.FashionStore.Items, ready);
 		}
 	}
 

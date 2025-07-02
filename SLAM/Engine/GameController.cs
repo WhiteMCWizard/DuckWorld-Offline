@@ -619,7 +619,17 @@ public abstract class GameController : ViewController
 			ApiClient.SubmitScore(GameId, TotalScore, selectedLevel.Difficulty, "default", 0, gameCompleted, onScoresSubmitted);
 			if (currentGameInfo.Type == Game.GameType.Job)
 			{
-				ApiClient.AddToWallet(coinRewardForThisLevel, null);
+				// Update local wallet instead of using API
+				if (SaveManager.Instance.IsLoaded)
+				{
+					var saveData = SaveManager.Instance.GetSaveData();
+					saveData.walletTotal += coinRewardForThisLevel;
+					SaveManager.Instance.MarkDirty();
+				}
+				else
+				{
+					Debug.LogError("SaveManager is not loaded. Cannot add coins to wallet.");
+				}
 				trackingEvent = new TrackingEvent();
 				trackingEvent.Type = TrackingEvent.TrackingType.DuckcoinsEarned;
 				trackingEvent.Arguments = new Dictionary<string, object>

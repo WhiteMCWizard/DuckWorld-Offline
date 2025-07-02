@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using SLAM.Avatar;
+using SLAM.SaveSystem;
 using SLAM.Slinq;
 using SLAM.Webservices;
 using UnityEngine;
@@ -58,8 +59,12 @@ public class Inventory : MonoBehaviour
 
 	protected void processShopItems(Filter filter, ShopItemData[] items, Action callback)
 	{
-		ApiClient.GetPlayerPurchasedShopItems(delegate(PurchasedShopItemData[] purchasedItems)
+		// Replace ApiClient.GetPlayerPurchasedShopItems with local implementation
+		if (SaveManager.Instance.IsLoaded)
 		{
+			// Get purchased items from local save data
+			PurchasedShopItemData[] purchasedItems = SaveManager.Instance.GetSaveData().purchasedShopItems;
+
 			AvatarItemLibrary itemLibrary = AvatarItemLibrary.GetItemLibrary(filter.Race, filter.Gender);
 			Dictionary<AvatarSystem.ItemCategory, Dictionary<string, List<ShopLibraryItem>>> dictionary = new Dictionary<AvatarSystem.ItemCategory, Dictionary<string, List<ShopLibraryItem>>>();
 			ShopItemData[] array = items;
@@ -127,6 +132,11 @@ public class Inventory : MonoBehaviour
 			}
 			categoryDefinitions = list.ToArray();
 			callback();
-		});
+		}
+		else
+		{
+			Debug.LogError("SaveManager is not loaded. Cannot retrieve purchased shop items.");
+			callback();
+		}
 	}
 }

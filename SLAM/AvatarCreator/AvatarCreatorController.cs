@@ -183,17 +183,43 @@ public class AvatarCreatorController : ViewController
 				// Update current profile reference by calling GetCurrentProfileData
 				UserProfile.GetCurrentProfileData(delegate(UserProfile profile)
 				{
-					// Profile is now updated, continue with the flow
 					AvatarSystem.SavePlayerConfiguration(playerConfig, mugshot);
 					AvatarConfigurationData defaultItems = (AvatarConfigurationData)AvatarItemLibrary.GetItemLibrary(playerConfig).DefaultConfigurations.First().Clone();
 					int[] shopItemIds = (from si in ShopItems.All
 						where playerConfig.Items.Contains(si.GUID) || defaultItems.Items.Contains(si.GUID)
 						select si.Id).ToArray();
-					ApiClient.AddItemsToInventory(shopItemIds, delegate
+					
+					// Add items to local inventory instead of using API
+					if (SaveManager.Instance.IsLoaded)
 					{
-						MotionComicPlayer.SetSceneToLoad("Hub");
-						SceneManager.Load("MC_ADV00_01_Intro");
-					});
+						var saveData = SaveManager.Instance.GetSaveData();
+						foreach (int itemId in shopItemIds)
+						{
+							// Create new purchased item data and add to array
+							var purchasedItem = new PurchasedShopItemData
+							{
+								ShopItemId = itemId,
+							};
+							
+							// Add to purchased items list
+							var itemList = saveData.purchasedShopItems.ToList();
+							itemList.Add(purchasedItem);
+							saveData.purchasedShopItems = itemList.ToArray();
+						}
+						
+						// Save changes
+						SaveManager.Instance.MarkDirty();
+					}
+					else
+					{
+						Debug.LogError("SaveManager is not loaded. Cannot update purchased shop items.");
+						loadingView.Close();
+						return;
+					}
+					
+					// Continue with game loading
+					MotionComicPlayer.SetSceneToLoad("Hub");
+					SceneManager.Load("MC_ADV00_01_Intro");
 				});
 			}
 			else

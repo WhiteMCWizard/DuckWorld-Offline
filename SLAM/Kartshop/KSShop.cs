@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using SLAM.Analytics;
 using SLAM.Kart;
+using SLAM.SaveSystem;
 using SLAM.Shops;
 using SLAM.Slinq;
 using SLAM.Webservices;
@@ -216,9 +217,41 @@ public class KSShop : MonoBehaviour
 					list.AddRange(from si in ShopItems.All
 						where kart.HasItem(si.GUID)
 						select si.Id);
-					ApiClient.AddItemsToInventory(list.ToArray(), delegate(bool succes)
+					
+					// Replace ApiClient.AddItemsToInventory with local implementation
+					if (SaveManager.Instance.IsLoaded)
 					{
-						if (succes)
+						var saveData = SaveManager.Instance.GetSaveData();
+						bool success = true;
+						
+						try
+						{
+							// Add items to local inventory
+							var itemList = saveData.purchasedShopItems.ToList();
+							foreach (int itemId in list)
+							{
+								// Create new purchased item data
+								var purchasedItem = new PurchasedShopItemData
+								{
+									ShopItemId = itemId,
+								};
+								
+								// Add to purchased items list
+								itemList.Add(purchasedItem);
+							}
+							saveData.purchasedShopItems = itemList.ToArray();
+							
+							// Save changes
+							SaveManager.Instance.MarkDirty();
+						}
+						catch (System.Exception ex)
+						{
+							Debug.LogError($"Failed to add items to inventory: {ex.Message}");
+							success = false;
+						}
+						
+						// Continue with success callback
+						if (success)
 						{
 							KartConfigurationData kartConfigurationData = (KartConfigurationData)kart.Clone();
 							kartConfigurationData.id = -1;
@@ -234,7 +267,12 @@ public class KSShop : MonoBehaviour
 							Debug.Log("Failed adding items to inventory :(");
 							callback(null);
 						}
-					});
+					}
+					else
+					{
+						Debug.LogError("SaveManager is not loaded. Cannot add items to inventory.");
+						callback(null);
+					}
 				});
 			}
 			else
@@ -247,8 +285,12 @@ public class KSShop : MonoBehaviour
 
 	protected void processShopItems(KSFilter filter, ShopItemData[] webserviceItems, Action callback)
 	{
-		ApiClient.GetPlayerPurchasedShopItems(delegate(PurchasedShopItemData[] purchasedItems)
+		// Replace ApiClient.GetPlayerPurchasedShopItems with local implementation
+		if (SaveManager.Instance.IsLoaded)
 		{
+			// Get purchased items from local save data
+			PurchasedShopItemData[] purchasedItems = SaveManager.Instance.GetSaveData().purchasedShopItems;
+			
 			KartItemLibrary itemLibrary = KartItemLibrary.GetItemLibrary();
 			Dictionary<KartSystem.ItemCategory, List<KSShopLibraryItem>> dictionary = new Dictionary<KartSystem.ItemCategory, List<KSShopLibraryItem>>();
 			List<KSShopCategoryDefinition> list = new List<KSShopCategoryDefinition>();
@@ -299,6 +341,11 @@ public class KSShop : MonoBehaviour
 			}
 			categoryDefinitions = list.ToArray();
 			callback();
-		});
+		}
+		else
+		{
+			Debug.LogError("SaveManager is not loaded. Cannot retrieve purchased shop items.");
+			callback();
+		}
 	}
 }

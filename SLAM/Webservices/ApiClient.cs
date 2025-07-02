@@ -51,8 +51,6 @@ public static class ApiClient
 
 	private static string SHOP_URL => API_URL + "/shops/";
 
-	private static string INVENTORY_URL => API_URL + "/users/{0}/inventory/";
-
 	private static string INVENTORY_BUY_URL => API_URL + "/users/{0}/inventory/buy/";
 
 	private static string MESSAGES_URL => API_URL + "/users/{0}/messages/";
@@ -291,31 +289,6 @@ public static class ApiClient
 	public static WebRequest PurchaseItems(int[] shopItemIds, int shopId, Action<bool> callback = null)
 	{
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("POST", string.Format(INVENTORY_BUY_URL, UserId), new Dictionary<string, object> { { "shopitems", shopItemIds } }, validateResponseStatus(201, callback));
-	}
-
-	public static WebRequest AddItemToInventory(int shopItemId, Action<bool> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("POST", string.Format(INVENTORY_URL, UserId), new Dictionary<string, object>
-		{
-			{
-				"shopitem",
-				shopItemId.ToString()
-			},
-			{
-				"gameuser",
-				UserId.ToString()
-			}
-		}, validateResponseStatus(201, callback));
-	}
-
-	public static WebRequest AddItemsToInventory(int[] shopItemIds, Action<bool> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("POST", string.Format(INVENTORY_URL, UserId), new Dictionary<string, object> { { "shopitems", shopItemIds } }, validateResponseStatus(201, callback));
-	}
-
-	public static WebRequest GetPlayerPurchasedShopItems(Action<PurchasedShopItemData[]> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(INVENTORY_URL, UserId), callback);
 	}
 
 	public static WebRequest SaveKartConfiguration(KartConfigurationData kartConfig, byte[] image, Action<KartConfigurationData> callback)

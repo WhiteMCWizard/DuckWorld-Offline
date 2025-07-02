@@ -185,17 +185,14 @@ public class AvatarCreatorController : ViewController
 				{
 					// Profile is now updated, continue with the flow
 					AvatarSystem.SavePlayerConfiguration(playerConfig, mugshot);
-					ApiClient.GetAllShopItems(delegate(ShopItemData[] allShopItems)
+					AvatarConfigurationData defaultItems = (AvatarConfigurationData)AvatarItemLibrary.GetItemLibrary(playerConfig).DefaultConfigurations.First().Clone();
+					int[] shopItemIds = (from si in ShopItems.All
+						where playerConfig.Items.Contains(si.GUID) || defaultItems.Items.Contains(si.GUID)
+						select si.Id).ToArray();
+					ApiClient.AddItemsToInventory(shopItemIds, delegate
 					{
-						AvatarConfigurationData defaultItems = (AvatarConfigurationData)AvatarItemLibrary.GetItemLibrary(playerConfig).DefaultConfigurations.First().Clone();
-						int[] shopItemIds = (from si in allShopItems
-							where playerConfig.Items.Contains(si.GUID) || defaultItems.Items.Contains(si.GUID)
-							select si.Id).ToArray();
-						ApiClient.AddItemsToInventory(shopItemIds, delegate
-						{
-							MotionComicPlayer.SetSceneToLoad("Hub");
-							SceneManager.Load("MC_ADV00_01_Intro");
-						});
+						MotionComicPlayer.SetSceneToLoad("Hub");
+						SceneManager.Load("MC_ADV00_01_Intro");
 					});
 				});
 			}

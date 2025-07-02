@@ -51,8 +51,6 @@ public static class ApiClient
 
 	private static string SHOP_URL => API_URL + "/shops/";
 
-	private static string SHOPITEM_URL => API_URL + "/shopitems/";
-
 	private static string INVENTORY_URL => API_URL + "/users/{0}/inventory/";
 
 	private static string INVENTORY_BUY_URL => API_URL + "/users/{0}/inventory/buy/";
@@ -239,11 +237,6 @@ public static class ApiClient
 	public static WebRequest GetHighscores(int gameId, string difficulty, Action<HighScore[]> callback, string levelname = "default")
 	{
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(HIGHSCORES_URL, UserId.ToString(), gameId.ToString(), levelname, difficulty), callback);
-	}
-
-	public static WebRequest GetAllShopItems(Action<ShopItemData[]> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", SHOPITEM_URL, callback);
 	}
 
 	public static WebRequest GetAllShops(Action<ShopData[]> callback)

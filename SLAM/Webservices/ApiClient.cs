@@ -47,8 +47,6 @@ public static class ApiClient
 
 	private static string GHOST_URL2 => API_URL + "/users/{0}/ghosts/";
 
-	private static string WALLET_URL => API_URL + "/users/{0}/wallet/";
-
 	private static string INVENTORY_BUY_URL => API_URL + "/users/{0}/inventory/buy/";
 
 	private static string MESSAGES_URL => API_URL + "/users/{0}/messages/";
@@ -233,26 +231,6 @@ public static class ApiClient
 	public static WebRequest GetHighscores(int gameId, string difficulty, Action<HighScore[]> callback, string levelname = "default")
 	{
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(HIGHSCORES_URL, UserId.ToString(), gameId.ToString(), levelname, difficulty), callback);
-	}
-
-	public static WebRequest GetWalletTotal(Action<int> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(WALLET_URL + "total/", UserId), callback);
-	}
-
-	public static WebRequest AddToWallet(int amount, Action<bool> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("POST", string.Format(WALLET_URL, UserId), new Dictionary<string, object>
-		{
-			{
-				"amount",
-				amount.ToString()
-			},
-			{
-				"gameuser",
-				UserId.ToString()
-			}
-		}, validateResponseStatus(201, callback));
 	}
 
 	public static WebRequest PurchaseItem(int shopItemId, int shopId = 1, Action<bool> callback = null)

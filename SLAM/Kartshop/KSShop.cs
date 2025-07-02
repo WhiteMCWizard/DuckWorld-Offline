@@ -204,80 +204,79 @@ public class KSShop : MonoBehaviour
 
 	public static void BuyKart(KartConfigurationData kart, int price, Action<KartConfigurationData> callback)
 	{
-		ApiClient.GetWalletTotal(delegate(int total)
+		if (SaveManager.Instance.IsLoaded)
 		{
+			var saveData = SaveManager.Instance.GetSaveData();
+			int total = saveData.walletTotal;
+			
 			if (total >= price)
 			{
-				ApiClient.AddToWallet(-price, delegate
+				// Update local wallet instead of using API
+				saveData.walletTotal -= price;
+				
+				List<int> list = new List<int>();
+				list.AddRange(from si in AllShops.AllItems
+					where kart.HasItem(si.GUID)
+					select si.Id);
+				
+				// Local implementation for adding items to inventory
+				bool success = true;
+				
+				try
 				{
-					List<int> list = new List<int>();
-					list.AddRange(from si in AllShops.AllItems
-						where kart.HasItem(si.GUID)
-						select si.Id);
+					// Add items to local inventory
+					var itemList = saveData.purchasedShopItems.ToList();
+					foreach (int itemId in list)
+					{
+						// Create new purchased item data
+						var purchasedItem = new PurchasedShopItemData
+						{
+							ShopItemId = itemId,
+						};
+						
+						// Add to purchased items list
+						itemList.Add(purchasedItem);
+					}
+					saveData.purchasedShopItems = itemList.ToArray();
 					
-					// Replace ApiClient.AddItemsToInventory with local implementation
-					if (SaveManager.Instance.IsLoaded)
+					// Save changes
+					SaveManager.Instance.MarkDirty();
+				}
+				catch (System.Exception ex)
+				{
+					Debug.LogError($"Failed to add items to inventory: {ex.Message}");
+					success = false;
+				}
+
+				// Continue with success callback
+				if (success)
+				{
+					KartConfigurationData kartConfigurationData = (KartConfigurationData)kart.Clone();
+					kartConfigurationData.id = -1;
+					kartConfigurationData.active = true;
+					ApiClient.SaveKartConfiguration(kartConfigurationData, new Texture2D(4, 4).EncodeToPNG(), delegate (KartConfigurationData config)
 					{
-						var saveData = SaveManager.Instance.GetSaveData();
-						bool success = true;
-						
-						try
-						{
-							// Add items to local inventory
-							var itemList = saveData.purchasedShopItems.ToList();
-							foreach (int itemId in list)
-							{
-								// Create new purchased item data
-								var purchasedItem = new PurchasedShopItemData
-								{
-									ShopItemId = itemId,
-								};
-								
-								// Add to purchased items list
-								itemList.Add(purchasedItem);
-							}
-							saveData.purchasedShopItems = itemList.ToArray();
-							
-							// Save changes
-							SaveManager.Instance.MarkDirty();
-						}
-						catch (System.Exception ex)
-						{
-							Debug.LogError($"Failed to add items to inventory: {ex.Message}");
-							success = false;
-						}
-						
-						// Continue with success callback
-						if (success)
-						{
-							KartConfigurationData kartConfigurationData = (KartConfigurationData)kart.Clone();
-							kartConfigurationData.id = -1;
-							kartConfigurationData.active = true;
-							ApiClient.SaveKartConfiguration(kartConfigurationData, new Texture2D(4, 4).EncodeToPNG(), delegate(KartConfigurationData config)
-							{
-								callback(config);
-							});
-							AudioController.Play("Avatar_clothes_buyItems");
-						}
-						else
-						{
-							Debug.Log("Failed adding items to inventory :(");
-							callback(null);
-						}
-					}
-					else
-					{
-						Debug.LogError("SaveManager is not loaded. Cannot add items to inventory.");
-						callback(null);
-					}
-				});
+						callback(config);
+					});
+					AudioController.Play("Avatar_clothes_buyItems");
+				}
+				else
+				{
+					Debug.Log("Failed adding items to inventory :(");
+					callback(null);
+				}
 			}
 			else
 			{
 				Debug.LogError("No money: Want to spend " + price + " but have " + total);
 				callback(null);
 			}
-		});
+		}
+		else
+		{
+			Debug.LogError("SaveManager is not loaded. Cannot access wallet data.");
+			callback(null);
+		}
 	}
 
 	protected void processShopItems(KSFilter filter, ShopItemData[] webserviceItems, Action callback)

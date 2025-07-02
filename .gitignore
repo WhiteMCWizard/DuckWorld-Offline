@@ -55,3 +55,6 @@ nunit-*.xml
 
 # Visual Studio
 .vs/
+
+# Copilot
+.github/copilot-instructions.md

@@ -212,31 +212,28 @@ public class KSShop : MonoBehaviour
 			{
 				ApiClient.AddToWallet(-price, delegate
 				{
-					ApiClient.GetAllShopItems(delegate(ShopItemData[] allShopItems)
+					List<int> list = new List<int>();
+					list.AddRange(from si in ShopItems.All
+						where kart.HasItem(si.GUID)
+						select si.Id);
+					ApiClient.AddItemsToInventory(list.ToArray(), delegate(bool succes)
 					{
-						List<int> list = new List<int>();
-						list.AddRange(from si in allShopItems
-							where kart.HasItem(si.GUID)
-							select si.Id);
-						ApiClient.AddItemsToInventory(list.ToArray(), delegate(bool succes)
+						if (succes)
 						{
-							if (succes)
+							KartConfigurationData kartConfigurationData = (KartConfigurationData)kart.Clone();
+							kartConfigurationData.id = -1;
+							kartConfigurationData.active = true;
+							ApiClient.SaveKartConfiguration(kartConfigurationData, new Texture2D(4, 4).EncodeToPNG(), delegate(KartConfigurationData config)
 							{
-								KartConfigurationData kartConfigurationData = (KartConfigurationData)kart.Clone();
-								kartConfigurationData.id = -1;
-								kartConfigurationData.active = true;
-								ApiClient.SaveKartConfiguration(kartConfigurationData, new Texture2D(4, 4).EncodeToPNG(), delegate(KartConfigurationData config)
-								{
-									callback(config);
-								});
-								AudioController.Play("Avatar_clothes_buyItems");
-							}
-							else
-							{
-								Debug.Log("Failed adding items to inventory :(");
-								callback(null);
-							}
-						});
+								callback(config);
+							});
+							AudioController.Play("Avatar_clothes_buyItems");
+						}
+						else
+						{
+							Debug.Log("Failed adding items to inventory :(");
+							callback(null);
+						}
 					});
 				});
 			}

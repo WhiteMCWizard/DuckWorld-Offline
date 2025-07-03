@@ -45,10 +45,6 @@ public class Webservice : SingletonMonobehaviour<Webservice>
 
 	private void Update()
 	{
-		if (UserProfile.Current != null && WebRequest.LastRequestTime + (float)keepaliveInterval < Time.realtimeSinceStartup)
-		{
-			ApiClient.GetUserId(null);
-		}
 	}
 
 	protected void authenticate()

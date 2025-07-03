@@ -25,11 +25,7 @@ public static class ApiClient
 
 	private static string GET_FREE_TOKEN_URL => API_URL + "/freeplay-auth/";
 
-	private static string USER_ID_URL => API_URL + "/users/id/";
-
 	private static string USER_FIND_URL => API_URL + "/users/?find={0}";
-
-	private static string USER_PROFILE_URL => API_URL + "/users/{0}/";
 
 	private static string USER_FRIENDS_URL => API_URL + "/users/{0}/friends/";
 
@@ -65,8 +61,6 @@ public static class ApiClient
 
 	private static string USER_ACHIEVEMENT_URL => API_URL + "/users/{0}/achievements/{1}/";
 
-	private static string USER_ACHIEVEMENTS_URL => API_URL + "/users/{0}/achievements/";
-
 	private static string USER_KART_URL => API_URL + "/users/{0}/kart/";
 
 	private static string USER_KART_DETAIL_URL => API_URL + "/users/{0}/kart/{1}/";
@@ -96,53 +90,6 @@ public static class ApiClient
 				API_URL = (string)enumerator.Current;
 			}
 		}
-	}
-
-	public static WebRequest GetUserProfile(Action<UserProfile> callback)
-	{
-		if (UserProfile.Current == null)
-		{
-			return GetUserId(delegate(int id)
-			{
-				if (id < 0)
-				{
-					callback(null);
-				}
-				else
-				{
-					SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(USER_PROFILE_URL, id), callback);
-				}
-			});
-		}
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(USER_PROFILE_URL, UserId), callback);
-	}
-
-	public static WebRequest GetUserId(Action<int> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", USER_ID_URL, delegate(UserProfile sillyProfile)
-		{
-			if (callback != null)
-			{
-				if (sillyProfile != null)
-				{
-					callback(sillyProfile.Id);
-				}
-				else
-				{
-					callback(-1);
-				}
-			}
-		});
-	}
-
-	public static WebRequest SavePlayerName(string newName, string newAddress, Action<bool> callback)
-	{
-		UserProfile.Current.Name = newName;
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("PATCH", string.Format(USER_PROFILE_URL, UserId.ToString()), new Dictionary<string, object>
-		{
-			{ "name", newName },
-			{ "address", newAddress }
-		}, validateResponseStatus(200, callback));
 	}
 
 	public static WebRequest GetFriends(Action<UserProfile[]> callback)
@@ -195,21 +142,6 @@ public static class ApiClient
 		});
 	}
 
-	public static WebRequest GetUserSpecificDetailsForGame(int gameId, Action<UserGameDetails> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(USER_GAME_URL, UserId, gameId), callback);
-	}
-
-	public static WebRequest GetUserSpecificDetailsForGame(string sceneName, Action<UserGameDetails[]> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(USER_GAME_SCENE_URL, UserId, sceneName), callback);
-	}
-
-	public static WebRequest GetUserSpecificDetailsForAllJobs(Action<Job[]> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("Get", string.Format(USER_JOBS_URL, UserId), callback);
-	}
-
 	public static WebRequest SubmitScore(int gameId, int score, string difficulty, int elapsedMilliseconds, bool gameCompleted, Action<UserScore> callback)
 	{
 		return SubmitScore(gameId, score, difficulty, "default", elapsedMilliseconds, gameCompleted, callback);
@@ -231,25 +163,6 @@ public static class ApiClient
 	public static WebRequest GetHighscores(int gameId, string difficulty, Action<HighScore[]> callback, string levelname = "default")
 	{
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(HIGHSCORES_URL, UserId.ToString(), gameId.ToString(), levelname, difficulty), callback);
-	}
-
-	public static WebRequest PurchaseItem(int shopItemId, int shopId = 1, Action<bool> callback = null)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("POST", string.Format(INVENTORY_BUY_URL, UserId), new Dictionary<string, object>
-		{
-			{
-				"shop",
-				shopId.ToString()
-			},
-			{
-				"shopitem",
-				shopItemId.ToString()
-			},
-			{
-				"gameuser",
-				UserId.ToString()
-			}
-		}, validateResponseStatus(201, callback));
 	}
 
 	public static WebRequest PurchaseItems(int[] shopItemIds, int shopId, Action<bool> callback = null)
@@ -278,19 +191,9 @@ public static class ApiClient
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("PUT", string.Format(USER_KART_DETAIL_URL, UserId, kartConfig.id), hash, wWWForm, callback);
 	}
 
-	public static WebRequest DeleteKartConfiguration(KartConfigurationData kartConfig, Action<bool> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("DELETE", string.Format(USER_KART_DETAIL_URL, UserId, kartConfig.id), validateResponseStatus(204, callback));
-	}
-
 	public static WebRequest GetKartConfigurations(Action<KartConfigurationData[]> callback)
 	{
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(USER_KART_URL, UserId), callback);
-	}
-
-	public static WebRequest GetTimeTrialConfiguration(int gameId, string difficulty, Action<GhostRecording[]> callback)
-	{
-		return GetTimeTrialConfiguration(UserId, gameId, difficulty, callback);
 	}
 
 	public static WebRequest GetTimeTrialConfiguration(int userId, int gameId, string difficulty, Action<GhostRecording[]> callback)
@@ -341,38 +244,6 @@ public static class ApiClient
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("POST", string.Format(GHOST_URL2, UserId), hash, wWWForm, callback);
 	}
 
-	public static float FixOutOfBoundsFloat(float inp)
-	{
-		if ((double)inp > 1.0)
-		{
-			float num = 1f;
-			while (inp > num)
-			{
-				num *= 10f;
-			}
-			return inp / num;
-		}
-		return inp;
-	}
-
-	public static WebRequest LoadMugshot(string url, Action<Texture2D> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", url, delegate(WebResponse result)
-		{
-			callback(result.Request.textureNonReadable);
-		});
-	}
-
-	public static WebRequest GetAllMessages(Action<Message[]> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(MESSAGES_URL, UserId), callback);
-	}
-
-	public static WebRequest GetUnarchivedMessages(Action<Message[]> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(MESSAGES_URL, UserId) + "?archived=false", callback);
-	}
-
 	public static WebRequest SendFriendRequest(int recipientId, Action<bool> callback)
 	{
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("POST", string.Format(MESSAGES_ADDFRIEND_URL, UserId), new Dictionary<string, object> { 
@@ -380,11 +251,6 @@ public static class ApiClient
 			"recipient",
 			recipientId.ToString()
 		} }, validateResponseStatus(201, callback));
-	}
-
-	public static WebRequest AcceptFriendRequest(int messageId, Action<bool> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(MESSAGES_ACCEPTFRIEND_URL, UserId, messageId), validateResponseStatus(200, callback));
 	}
 
 	public static WebRequest ChallengeFriend(int recipientId, int gameId, int score, string difficulty, Action<bool> callback)
@@ -443,36 +309,10 @@ public static class ApiClient
 		} }, validateResponseStatus(201, callback));
 	}
 
-	public static WebRequest ArchiveMessage(int messageId, Action<bool> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("PATCH", string.Format(MESSAGES_DETAIL_URL, UserId, messageId), new Dictionary<string, object> { 
-		{
-			"archived",
-			bool.TrueString
-		} }, validateResponseStatus(200, callback));
-	}
-
-	public static WebRequest DeleteMessage(int messageId, Action<bool> callback)
-	{
-		Debug.LogWarning("There is no endpoint for deleting messages yet!");
-		callback?.Invoke(obj: true);
-		return null;
-	}
-
 	public static WebRequest SearchPlayerByName(string name, Action<UserProfile[]> callback)
 	{
 		name = Uri.EscapeDataString(name);
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(USER_FIND_URL, name), callback);
-	}
-
-	public static WebRequest SetAchievementProgress(UserAchievement achievement, Action<UserAchievement> callback)
-	{
-		WWWForm wWWForm = new WWWForm();
-		wWWForm.AddField("game_user", UserId);
-		wWWForm.AddField("achievement", achievement.Info.Id);
-		wWWForm.AddField("progress", achievement.Progress.ToString());
-		wWWForm.AddField("completed", achievement.Completed.ToString());
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("PUT", string.Format(USER_ACHIEVEMENT_URL, UserId, achievement.Info.Id), wWWForm, callback);
 	}
 
 	public static void OpenRegisterPage()

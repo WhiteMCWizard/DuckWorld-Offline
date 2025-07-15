@@ -106,29 +106,18 @@ public class ShopController : InventoryController
 
 	protected override void OnInventoryRetrieved()
 	{
-		HandleWalletRetrieval();
-	}
-
-	/// <summary>
-	/// Handles wallet retrieval and error handling for SaveManager.
-	/// </summary>
-	protected void HandleWalletRetrieval()
-	{
-		ShopView view = GetView<ShopView>();
 		if (SaveManager.Instance.IsLoaded)
-		{
-			// Get wallet total from local save data
-			cashInWallet = SaveManager.Instance.GetSaveData().walletTotal;
-			base.OnInventoryRetrieved();
-			view.UpdateShoppingCart(shop.ShoppingCart, 0.ToString());
-			view.UpdateWallet(cashInWallet.ToString());
-		}
-		else
-		{
-			Debug.LogError("SaveManager is not loaded. Cannot retrieve wallet total.");
-			view.UpdateWallet("0");
-			base.OnInventoryRetrieved();
-		}
+			{
+				base.OnInventoryRetrieved();
+				cashInWallet = SaveManager.Instance.GetSaveData().walletTotal;
+				ShopView view = GetView<ShopView>();
+				view.UpdateShoppingCart(shop.ShoppingCart, 0.ToString());
+				view.UpdateWallet(cashInWallet.ToString());
+			}
+			else
+			{
+				Debug.LogError("SaveManager is not loaded. Cannot retrieve wallet total.");
+			}
 	}
 
 	private void OnItemRemovedFromCart(ShoppingCartItemRemovedEvent evt)

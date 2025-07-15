@@ -174,15 +174,18 @@ public class KSShop : MonoBehaviour
 
 	public static void GetUserKart(Action<KartConfigurationData> callback)
 	{
-		ApiClient.GetKartConfigurations(delegate(KartConfigurationData[] karts)
+		if (SaveManager.Instance.IsLoaded)
 		{
+			var saveData = SaveManager.Instance.GetSaveData();
+			KartConfigurationData[] karts = saveData.kartConfigurations;
+
 			if (karts.Length == 0)
 			{
 				KartItemLibrary itemLibrary = KartItemLibrary.GetItemLibrary();
 				KartConfigurationData kartConfigurationData = (KartConfigurationData)itemLibrary.DefaultConfigurations.Last().Clone();
 				kartConfigurationData.id = -1;
 				kartConfigurationData.active = true;
-				BuyKart(kartConfigurationData, 0, delegate(KartConfigurationData newKart)
+				BuyKart(kartConfigurationData, 0, delegate (KartConfigurationData newKart)
 				{
 					callback(newKart);
 				});
@@ -199,7 +202,12 @@ public class KSShop : MonoBehaviour
 				}
 				callback(obj);
 			}
-		});
+		}
+		else
+		{
+			Debug.LogError("SaveManager is not loaded. Cannot retrieve user kart.");
+			callback(null);
+		}
 	}
 
 	public static void BuyKart(KartConfigurationData kart, int price, Action<KartConfigurationData> callback)
@@ -254,7 +262,7 @@ public class KSShop : MonoBehaviour
 					KartConfigurationData kartConfigurationData = (KartConfigurationData)kart.Clone();
 					kartConfigurationData.id = -1;
 					kartConfigurationData.active = true;
-					ApiClient.SaveKartConfiguration(kartConfigurationData, new Texture2D(4, 4).EncodeToPNG(), delegate (KartConfigurationData config)
+					SaveManager.Instance.GetSaveData().SaveKartConfiguration(kartConfigurationData, new Texture2D(4, 4).EncodeToPNG(), delegate (KartConfigurationData config)
 					{
 						callback(config);
 					});

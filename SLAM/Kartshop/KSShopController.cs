@@ -195,7 +195,7 @@ public class KSShopController : ViewController
 	private void saveKart(KartConfigurationData kart)
 	{
 		kart.active = true;
-		ApiClient.SaveKartConfiguration(kart, new Texture2D(4, 4).EncodeToPNG(), delegate(KartConfigurationData result)
+		SaveManager.Instance.GetSaveData().SaveKartConfiguration(kart, new Texture2D(4, 4).EncodeToPNG(), delegate(KartConfigurationData result)
 		{
 			KartSystem.PlayerKartConfiguration = result;
 		});

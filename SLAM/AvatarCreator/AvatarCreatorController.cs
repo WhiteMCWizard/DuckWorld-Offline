@@ -178,7 +178,6 @@ public class AvatarCreatorController : ViewController
 				var saveData = SaveManager.Instance.GetSaveData();
 				saveData.profile.Name = playername;
 				saveData.profile.Address = playerAddress;
-				SaveManager.Instance.MarkDirty();
 
 				// Update current profile reference by calling GetCurrentProfileData
 				UserProfile.GetCurrentProfileData(delegate (UserProfile profile)

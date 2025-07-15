@@ -43,28 +43,28 @@ public class Game
 	public int TotalLevels;
 
 	[JsonName("location")]
-	public int Location { get; private set; }
+	public int Location { get; set; }
 
 	[JsonName("id")]
-	public int Id { get; private set; }
+	public int Id { get; set; }
 
 	[JsonName("name")]
-	public string Name { get; private set; }
+	public string Name { get; set; }
 
 	[JsonName("scene")]
-	public string SceneName { get; private set; }
+	public string SceneName { get; set; }
 
 	[JsonName("type")]
-	public GameType Type { get; private set; }
+	public GameType Type { get; set; }
 
 	[JsonName("enabled")]
-	public bool Enabled { get; private set; }
+	public bool Enabled { get; set; }
 
 	[JsonName("is_unlocked")]
-	public bool IsUnlocked { get; private set; }
+	public bool IsUnlocked { get; set; }
 
 	[JsonName("is_unlocked_sa")]
-	public bool IsUnlockedSA { get; private set; }
+	public bool IsUnlockedSA { get; set; }
 
 	[JsonName("display_order")]
 	public int SortOrder { get; set; }
@@ -79,11 +79,9 @@ public class Game
 	public string SceneMotionComicName { get; set; }
 
 	[JsonName("special_character")]
-	public int _specialCharacterID { get; private set; }
+	public GameCharacter SpecialCharacter { get; set; }
 
 	public int FreeLevelTo => FreeLevels.Max();
-
-	public GameCharacter SpecialCharacter => (GameCharacter)_specialCharacterID;
 
 	public bool IsPremiumAvailable => true;
 

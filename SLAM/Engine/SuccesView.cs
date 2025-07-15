@@ -31,7 +31,7 @@ public class SuccesView : SuccesBaseView
 
 	protected override void updateStuff(bool isJob, bool isNextLevelAvailable, bool canChallengeFriend)
 	{
-		btnHighscores.gameObject.SetActive(!isJob);
+		btnHighscores.gameObject.SetActive(false);
 		btnNextLevel.gameObject.SetActive(isNextLevelAvailable);
 		btnChallengeFriend.gameObject.SetActive(value: false);
 		lblTotalScores.text = "0";

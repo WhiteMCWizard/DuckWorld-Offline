@@ -24,7 +24,6 @@ namespace SLAM.SaveSystem
 
         public void SaveScore(int gameId, int score, string difficulty, string levelName, int elapsedMilliseconds, bool gameCompleted, Action<UserScore> callback)
         {
-            // Unlock sequence for levels (too lazy to implement rn)
             var unlock_sequence = new Dictionary<int, int>
             {
                 { 34, 5 }, { 5, 6 }, { 6, 7 }, { 7, 8 }, { 8, 9 }, { 9, 35 }, { 37, 4 }, { 4, 16 }, { 16, 27 }, { 27, 1 }, { 1, 28 }, { 28, 38 }
@@ -67,6 +66,31 @@ namespace SLAM.SaveSystem
                     progression.Score = score;
                 if (progression.Time > elapsedMilliseconds || progression.Time == 0)
                     progression.Time = elapsedMilliseconds;
+            }
+
+            var requiredLevel = Locations.GetRequiredDifficultyToUnlockNextGame(gameId);
+
+            if (int.TryParse(difficulty, out int difficultyValue) && difficultyValue >= requiredLevel)
+            {
+                // Unlock next level if applicable
+                if (unlock_sequence.TryGetValue(gameId, out int nextLevelId))
+                {
+                    var nextGameDetails = Array.Find(userGameDetails, g => g.GameId == nextLevelId);
+                    if (nextGameDetails == null)
+                    {
+                        nextGameDetails = new UserGameDetails
+                        {
+                            Id = nextLevelId,
+                            IsUnlocked = true,
+                            IsUnlockedSA = false,
+                            HasFinished = false,
+                            Progression = new UserGameProgression[0],
+                            GameId = nextLevelId
+                        };
+                        Array.Resize(ref userGameDetails, userGameDetails.Length + 1);
+                        userGameDetails[userGameDetails.Length - 1] = nextGameDetails;
+                    }
+                }
             }
 
             SaveManager.Instance.MarkDirty();

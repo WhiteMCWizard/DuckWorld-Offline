@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using SLAM.Achievements;
 using SLAM.Webservices;
 
@@ -15,5 +16,61 @@ namespace SLAM.SaveSystem
         public PurchasedShopItemData[] purchasedShopItems = new PurchasedShopItemData[0];
         public int walletTotal = 0;
         // Add more fields here as needed for future data
+
+        public void SaveScore(int gameId, int score, string difficulty, int elapsedMilliseconds, bool gameCompleted, Action<UserScore> callback)
+        {
+            SaveScore(gameId, score, difficulty, "default", elapsedMilliseconds, gameCompleted, callback);
+        }
+
+        public void SaveScore(int gameId, int score, string difficulty, string levelName, int elapsedMilliseconds, bool gameCompleted, Action<UserScore> callback)
+        {
+            // Unlock sequence for levels (too lazy to implement rn)
+            var unlock_sequence = new Dictionary<int, int>
+            {
+                { 34, 5 }, { 5, 6 }, { 6, 7 }, { 7, 8 }, { 8, 9 }, { 9, 35 }, { 37, 4 }, { 4, 16 }, { 16, 27 }, { 27, 1 }, { 1, 28 }, { 28, 38 }
+            };
+
+            // Find or create UserGameDetails for the given gameId
+            var gameDetails = Array.Find(userGameDetails, g => g.GameId == gameId);
+            if (gameDetails == null)
+            {
+                gameDetails = new UserGameDetails
+                {
+                    Id = gameId,
+                    IsUnlocked = true,
+                    IsUnlockedSA = false,
+                    HasFinished = gameCompleted,
+                    Progression = new UserGameProgression[0],
+                    GameId = gameId
+                };
+                Array.Resize(ref userGameDetails, userGameDetails.Length + 1);
+                userGameDetails[userGameDetails.Length - 1] = gameDetails;
+            }
+
+            // Find or create progression for the given level
+            var progression = Array.Find(gameDetails.Progression, p => p.Level == levelName);
+            if (progression == null)
+            {
+                var newProgression = new UserGameProgression
+                {
+                    LevelIndex = int.TryParse(difficulty, out int diffIndex) ? diffIndex : 0,
+                    Level = levelName,
+                    Score = score,
+                    Time = elapsedMilliseconds
+                };
+                Array.Resize(ref gameDetails.Progression, gameDetails.Progression.Length + 1);
+                gameDetails.Progression[gameDetails.Progression.Length - 1] = newProgression;
+            }
+            else
+            {
+                if (progression.Score < score)
+                    progression.Score = score;
+                if (progression.Time > elapsedMilliseconds || progression.Time == 0)
+                    progression.Time = elapsedMilliseconds;
+            }
+
+            SaveManager.Instance.MarkDirty();
+            callback?.Invoke(new UserScore());
+        }
     }
 }

@@ -26,7 +26,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_GRANDMOGUL,
                         FreeLevels = new int[] { 1 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 0
                     },
                     new Game {
@@ -44,7 +44,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_HUEY,
                         FreeLevels = new int[] { 1 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 10
                     },
                     new Game {
@@ -61,7 +61,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_HUEY,
                         FreeLevels = new int[] { 1 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 6
                     }
                 },
@@ -87,7 +87,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_SCROOGE,
                         FreeLevels = new int[] { 1 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 15
                     }
                 },
@@ -114,7 +114,7 @@ public static class Locations
                         SceneMotionComicName = "MC_ADV01_01_Intro",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_MAY,
                         FreeLevels = new int[] { 0 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 1
                     },
                     new Game {
@@ -249,7 +249,7 @@ public static class Locations
                         SceneMotionComicName = "MC_ADV02_01_Intro",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_MAY,
                         FreeLevels = new int[] { 0 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 1
                     },
                     new Game {
@@ -382,7 +382,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_GRANDMA_DUCK,
                         FreeLevels = new int[] { 1 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 15
                     }
                 },
@@ -408,7 +408,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_GYRO_GEARLOOSE,
                         FreeLevels = new int[] { 1 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 15
                     }
                 },
@@ -435,7 +435,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_HUEY,
                         FreeLevels = new int[] { 1 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 15
                     },
                     new Game {
@@ -453,7 +453,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_WARBOL,
                         FreeLevels = new int[] { 0 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 15
                     },
                     new Game {
@@ -471,7 +471,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_WARBOL,
                         FreeLevels = new int[] { 0 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 15
                     }
                 },
@@ -499,7 +499,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_SCROOGE,
                         FreeLevels = new int[] { 0 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 15
                     },
                     new Game {
@@ -516,7 +516,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_SCROOGE,
                         FreeLevels = new int[] { 0 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 15
                     }
                 },
@@ -544,7 +544,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_CHRISQUIZ,
                         FreeLevels = new int[] { 1 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 15
                     }
                 },
@@ -570,7 +570,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_NAME_MAY,
                         FreeLevels = new int[] { 0 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 0
                     }
                 },
@@ -596,7 +596,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_AVATAR_NAME,
                         FreeLevels = new int[] { 0 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 0
                     }
                 },
@@ -622,7 +622,7 @@ public static class Locations
                         SceneMotionComicName = "",
                         SpecialCharacter = Game.GameCharacter.NPC_AVATAR_NAME,
                         FreeLevels = new int[] { 0 },
-                        RequiredDifficultyToUnlockNextGame = 0,
+                        RequiredDifficultyToUnlockNextGame = 1,
                         TotalLevels = 0
                     }
                 },

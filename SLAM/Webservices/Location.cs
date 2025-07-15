@@ -5,25 +5,22 @@ namespace SLAM.Webservices;
 public class Location
 {
 	[JsonName("games")]
-	public Game[] Games { get; private set; }
+	public Game[] Games { get; set; }
 
 	[JsonName("id")]
-	public int Id { get; private set; }
+	public int Id { get; set; }
 
 	[JsonName("name")]
-	public string Name { get; private set; }
+	public string Name { get; set; }
 
 	[JsonName("description")]
-	public string Description { get; private set; }
-
-	[JsonName("resident")]
-	public string Resident { get; private set; }
+	public string Description { get; set; }
 
 	[JsonName("enabled")]
-	public bool Enabled { get; private set; }
+	public bool Enabled { get; set; }
 
 	[JsonName("is_unlocked")]
-	public bool IsUnlocked { get; private set; }
+	public bool IsUnlocked { get; set; }
 
 	public Location()
 	{

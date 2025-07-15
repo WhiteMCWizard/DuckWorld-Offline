@@ -634,4 +634,17 @@ public static class Locations
             }
         };
     }
+
+    public static int GetRequiredDifficultyToUnlockNextGame(int gameId)
+    {
+        foreach (var location in GetLocations())
+        {
+            foreach (var game in location.Games)
+            {
+                if (game.Id == gameId)
+                    return game.RequiredDifficultyToUnlockNextGame;
+            }
+        }
+        return -1;
+    }
 }

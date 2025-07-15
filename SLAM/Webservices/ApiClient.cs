@@ -45,10 +45,6 @@ public static class ApiClient
 
 	private static string MESSAGES_CHALLENGERESPONSE_URL => API_URL + "/users/{0}/messages/challengeresponse/";
 
-	private static string USER_KART_URL => API_URL + "/users/{0}/kart/";
-
-	private static string USER_KART_DETAIL_URL => API_URL + "/users/{0}/kart/{1}/";
-
 	private static string TIP_A_PARENT_URL => API_URL + "/send-mail/";
 
 	static ApiClient()
@@ -134,32 +130,6 @@ public static class ApiClient
 	public static WebRequest PurchaseItems(int[] shopItemIds, int shopId, Action<bool> callback = null)
 	{
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("POST", string.Format(INVENTORY_BUY_URL, UserId), new Dictionary<string, object> { { "shopitems", shopItemIds } }, validateResponseStatus(201, callback));
-	}
-
-	public static WebRequest SaveKartConfiguration(KartConfigurationData kartConfig, byte[] image, Action<KartConfigurationData> callback)
-	{
-		WWWForm wWWForm = new WWWForm();
-		wWWForm.AddField("config", JsonMapper.ToJson(kartConfig.Items));
-		wWWForm.AddField("active", kartConfig.active.ToString());
-		string hash = WebRequest.CalculateHash(wWWForm);
-		wWWForm.AddBinaryData("image", image);
-		if (kartConfig.id == -1)
-		{
-			return SingletonMonobehaviour<Webservice>.Instance.DoRequest("POST", string.Format(USER_KART_URL, UserId), hash, wWWForm, delegate(KartConfigurationData newConfig)
-			{
-				kartConfig.id = newConfig.id;
-				if (callback != null)
-				{
-					callback(newConfig);
-				}
-			});
-		}
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("PUT", string.Format(USER_KART_DETAIL_URL, UserId, kartConfig.id), hash, wWWForm, callback);
-	}
-
-	public static WebRequest GetKartConfigurations(Action<KartConfigurationData[]> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(USER_KART_URL, UserId), callback);
 	}
 
 	public static WebRequest GetTimeTrialConfiguration(int userId, int gameId, string difficulty, Action<GhostRecording[]> callback)

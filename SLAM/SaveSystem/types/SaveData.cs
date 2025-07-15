@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using SLAM.Achievements;
+using SLAM.Kart;
 using SLAM.Webservices;
 
 namespace SLAM.SaveSystem
@@ -10,6 +11,7 @@ namespace SLAM.SaveSystem
     {
         public UserProfile profile = new UserProfile();
         public PlayerAvatarData avatar = new PlayerAvatarData();
+        public KartConfigurationData[] kartConfigurations = new KartConfigurationData[0];
         public UserGameDetails[] userGameDetails = new UserGameDetails[0];
         public UserAchievement[] userAchievements = new UserAchievement[0];
         public Message[] messages = new Message[0];
@@ -95,6 +97,22 @@ namespace SLAM.SaveSystem
 
             SaveManager.Instance.MarkDirty();
             callback?.Invoke(new UserScore());
+        }
+
+        public void SaveKartConfiguration(KartConfigurationData kartConfig, byte[] image, Action<KartConfigurationData> callback)
+        {
+            if (kartConfigurations == null || kartConfigurations.Length == 0)
+            {
+                kartConfigurations = new KartConfigurationData[] { kartConfig };
+            }
+            else
+            {
+                kartConfigurations[0] = kartConfig;
+            }
+
+            SaveManager.Instance.MarkDirty();
+
+            callback?.Invoke(kartConfig);
         }
     }
 }

@@ -170,7 +170,7 @@ public class AvatarCreatorController : ViewController
 		OpenView<LoadingView>();
 		AvatarConfigurationData playerConfig = configData;
 		string playerAddress = Localization.Get("AC_STREETNAMES").Split(',').GetRandom();
-		SingletonMonobehaviour<PhotoBooth>.Instance.SayCheese(playerConfig, delegate(Texture2D mugshot)
+		SingletonMonobehaviour<PhotoBooth>.Instance.SayCheese(playerConfig, delegate (Texture2D mugshot)
 		{
 			// Save player name and address locally instead of using API
 			if (SaveManager.Instance.IsLoaded)
@@ -179,44 +179,34 @@ public class AvatarCreatorController : ViewController
 				saveData.profile.Name = playername;
 				saveData.profile.Address = playerAddress;
 				SaveManager.Instance.MarkDirty();
-				
+
 				// Update current profile reference by calling GetCurrentProfileData
-				UserProfile.GetCurrentProfileData(delegate(UserProfile profile)
+				UserProfile.GetCurrentProfileData(delegate (UserProfile profile)
 				{
 					AvatarSystem.SavePlayerConfiguration(playerConfig, mugshot);
 					AvatarConfigurationData defaultItems = (AvatarConfigurationData)AvatarItemLibrary.GetItemLibrary(playerConfig).DefaultConfigurations.First().Clone();
 					int[] shopItemIds = (from si in AllShops.AllItems
-						where playerConfig.Items.Contains(si.GUID) || defaultItems.Items.Contains(si.GUID)
-						select si.Id).ToArray();
-					
-					// Add items to local inventory instead of using API
-					if (SaveManager.Instance.IsLoaded)
+										 where playerConfig.Items.Contains(si.GUID) || defaultItems.Items.Contains(si.GUID)
+										 select si.Id).ToArray();
+
+					var saveData = SaveManager.Instance.GetSaveData();
+					foreach (int itemId in shopItemIds)
 					{
-						var saveData = SaveManager.Instance.GetSaveData();
-						foreach (int itemId in shopItemIds)
+						// Create new purchased item data and add to array
+						var purchasedItem = new PurchasedShopItemData
 						{
-							// Create new purchased item data and add to array
-							var purchasedItem = new PurchasedShopItemData
-							{
-								ShopItemId = itemId,
-							};
-							
-							// Add to purchased items list
-							var itemList = saveData.purchasedShopItems.ToList();
-							itemList.Add(purchasedItem);
-							saveData.purchasedShopItems = itemList.ToArray();
-						}
-						
-						// Save changes
-						SaveManager.Instance.MarkDirty();
+							ShopItemId = itemId,
+						};
+
+						// Add to purchased items list
+						var itemList = saveData.purchasedShopItems.ToList();
+						itemList.Add(purchasedItem);
+						saveData.purchasedShopItems = itemList.ToArray();
 					}
-					else
-					{
-						Debug.LogError("SaveManager is not loaded. Cannot update purchased shop items.");
-						loadingView.Close();
-						return;
-					}
-					
+
+					// Save changes
+					SaveManager.Instance.MarkDirty();
+
 					// Continue with game loading
 					MotionComicPlayer.SetSceneToLoad("Hub");
 					SceneManager.Load("MC_ADV00_01_Intro");

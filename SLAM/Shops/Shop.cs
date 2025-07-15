@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using SLAM.Analytics;
+using SLAM.SaveSystem;
 using SLAM.Webservices;
+using UnityEngine;
+using System.Linq;
 
 namespace SLAM.Shops;
 
@@ -79,54 +82,69 @@ public class Shop : Inventory
 			callback(new Feedback(succes: false, Localization.Get("WR_ERROR_ITEM_ALREADY_BOUGHT") + " " + shoppingCart[i].Texture.name));
 			return;
 		}
-		ApiClient.PurchaseItems(array, 1, delegate(bool succes)
+		if (SaveManager.Instance.IsLoaded)
 		{
-			if (succes)
+			var saveData = SaveManager.Instance.GetSaveData();
+			foreach (int itemId in array)
 			{
-				foreach (ShopVariationDefinition item in shoppingCart)
+				// Create new purchased item data and add to array
+				var purchasedItem = new PurchasedShopItemData
 				{
-					GameEvents.Invoke(new TrackingEvent
-					{
-						Type = TrackingEvent.TrackingType.ItemBought,
-						Arguments = new Dictionary<string, object>
-						{
-							{
-								"ItemGUID",
-								item.Item.LibraryItem.GUID
-							},
-							{ "Price", item.Price }
-						}
-					});
-					item.HasBeenBoughtByPlayer = true;
-				}
-				if (!filter.OnlyShowBoughtItems)
+					ShopItemId = itemId,
+				};
+
+				// Add to purchased items list
+				var itemList = saveData.purchasedShopItems.ToList();
+				itemList.Add(purchasedItem);
+				saveData.purchasedShopItems = itemList.ToArray();
+			}
+
+			// Save changes
+			SaveManager.Instance.MarkDirty();
+			foreach (ShopVariationDefinition item in shoppingCart)
+			{
+				GameEvents.Invoke(new TrackingEvent
 				{
-					ShopCategoryDefinition[] array2 = categoryDefinitions;
-					foreach (ShopCategoryDefinition shopCategoryDefinition in array2)
-					{
-						List<ShopVariationDefinition> list = new List<ShopVariationDefinition>(shopCategoryDefinition.Items);
-						bool flag = false;
-						foreach (ShopVariationDefinition item2 in shoppingCart)
-						{
-							if (list.Contains(item2))
+					Type = TrackingEvent.TrackingType.ItemBought,
+					Arguments = new Dictionary<string, object>
 							{
-								list.Remove(item2);
-								flag = true;
+								{
+									"ItemGUID",
+									item.Item.LibraryItem.GUID
+								},
+								{ "Price", item.Price }
 							}
-						}
-						if (flag)
+				});
+				item.HasBeenBoughtByPlayer = true;
+			}
+			if (!filter.OnlyShowBoughtItems)
+			{
+				ShopCategoryDefinition[] array2 = categoryDefinitions;
+				foreach (ShopCategoryDefinition shopCategoryDefinition in array2)
+				{
+					List<ShopVariationDefinition> list = new List<ShopVariationDefinition>(shopCategoryDefinition.Items);
+					bool flag = false;
+					foreach (ShopVariationDefinition item2 in shoppingCart)
+					{
+						if (list.Contains(item2))
 						{
-							shopCategoryDefinition.Items = list.ToArray();
+							list.Remove(item2);
+							flag = true;
 						}
 					}
+					if (flag)
+					{
+						shopCategoryDefinition.Items = list.ToArray();
+					}
 				}
-				callback(new Feedback(succes: true, string.Empty));
-				shoppingCart.Clear();
 			}
-			else
-			{
-				callback(new Feedback(succes: true, StringFormatter.GetLocalizationFormatted("WR_ERROR_PURCHASE_FAILED", shoppingCart.Count)));
-			}
-		});
+			callback(new Feedback(succes: true, string.Empty));
+			shoppingCart.Clear();
+		}
+		else
+		{
+			Debug.LogError("SaveManager is not loaded. Cannot save player configuration.");
+			callback(new Feedback(succes: true, StringFormatter.GetLocalizationFormatted("WR_ERROR_PURCHASE_FAILED", shoppingCart.Count)));
+		}
 	}
 }

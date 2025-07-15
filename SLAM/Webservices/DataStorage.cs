@@ -1,4 +1,5 @@
 using System;
+using LitJson;
 using SLAM.SaveSystem;
 using SLAM.Slinq;
 
@@ -46,7 +47,7 @@ public static class DataStorage
 			callback(locations);
 			return;
 		}
-		locations = Locations.All;
+		locations = Locations.GetLocations();
 		callback(locations);
 	}
 

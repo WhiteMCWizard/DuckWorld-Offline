@@ -29,12 +29,6 @@ public static class ApiClient
 
 	private static string USER_FRIENDS_URL => API_URL + "/users/{0}/friends/";
 
-	private static string USER_GAME_URL => API_URL + "/users/{0}/games/{1}/";
-
-	private static string USER_GAME_SCENE_URL => API_URL + "/users/{0}/games/?scene={1}";
-
-	private static string USER_JOBS_URL => API_URL + "/users/{0}/jobs/";
-
 	private static string SCORES_URL => API_URL + "/users/{0}/scores/?complete={1}";
 
 	private static string HIGHSCORES_URL => API_URL + "/users/{0}/games/{1}/highscores/?level={2}&difficulty={3}";
@@ -45,21 +39,13 @@ public static class ApiClient
 
 	private static string INVENTORY_BUY_URL => API_URL + "/users/{0}/inventory/buy/";
 
-	private static string MESSAGES_URL => API_URL + "/users/{0}/messages/";
-
 	private static string MESSAGES_DETAIL_URL => API_URL + "/users/{0}/messages/{1}/";
 
 	private static string MESSAGES_ADDFRIEND_URL => API_URL + "/users/{0}/messages/addfriend/";
 
-	private static string MESSAGES_ACCEPTFRIEND_URL => API_URL + "/users/{0}/messages/acceptfriend/{1}/";
-
 	private static string MESSAGES_CHALLENGEFRIEND_URL => API_URL + "/users/{0}/messages/challengefriend/";
 
 	private static string MESSAGES_CHALLENGERESPONSE_URL => API_URL + "/users/{0}/messages/challengeresponse/";
-
-	private static string ACHIEVEMENTS_URL => API_URL + "/achievements/";
-
-	private static string USER_ACHIEVEMENT_URL => API_URL + "/users/{0}/achievements/{1}/";
 
 	private static string USER_KART_URL => API_URL + "/users/{0}/kart/";
 

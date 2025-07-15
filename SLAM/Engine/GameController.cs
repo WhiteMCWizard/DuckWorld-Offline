@@ -616,7 +616,7 @@ public abstract class GameController : ViewController
 			};
 			GameEvents.Invoke(trackingEvent);
 			bool gameCompleted = !UserProfile.Current.IsFree && selectedLevel.Index >= Levels.Length - 1;
-			ApiClient.SubmitScore(GameId, TotalScore, selectedLevel.Difficulty, "default", 0, gameCompleted, onScoresSubmitted);
+			SaveManager.Instance.GetSaveData().SaveScore(GameId, TotalScore, selectedLevel.Difficulty, "default", 0, gameCompleted, onScoresSubmitted);
 			if (currentGameInfo.Type == Game.GameType.Job)
 			{
 				// Update local wallet instead of using API

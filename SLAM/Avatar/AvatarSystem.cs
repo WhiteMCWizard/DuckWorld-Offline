@@ -48,8 +48,8 @@ public static class AvatarSystem
 		if (avatarData != null)
 		{
 			avatarData.Config = config;
-			// TODO: Save mugshot to save data
 			PlayerAvatarData.SetCurrentAvatarData(avatarData);
+			PlayerAvatarData.SaveMugShot(mugshot);
 		}
 		else
 		{

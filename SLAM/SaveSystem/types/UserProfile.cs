@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using LitJson;
-using SLAM.Webservices;
 using UnityEngine;
 
 namespace SLAM.SaveSystem;
@@ -44,7 +44,7 @@ public class UserProfile
 		set
 		{
 			_mugshotUrl = value;
-			downloadMugshot();
+			loadMugshot();
 		}
 	}
 
@@ -77,6 +77,7 @@ public class UserProfile
 		if (SaveManager.Instance.IsLoaded)
 		{
 			Current = SaveManager.Instance.GetSaveData().profile;
+			Current.loadMugshot();
 		}
 		else
 		{
@@ -91,36 +92,28 @@ public class UserProfile
 		Current = null;
 	}
 
-	private void downloadMugshot()
+	private void loadMugshot()
 	{
-		if (string.IsNullOrEmpty(MugShotUrl))
+		// Instead of downloading, load from persistentDataPath/avatar_mugshot.png
+		string mugshotPath = Path.Combine(Application.persistentDataPath, "avatar_mugshot.png");
+		if (File.Exists(mugshotPath))
 		{
-			return;
-		}
-		if (imageCache.ContainsKey(MugShotUrl))
-		{
-			Webservice.WaitFor(delegate
+			byte[] fileData = File.ReadAllBytes(mugshotPath);
+			Texture2D tex = new Texture2D(2, 2, TextureFormat.ARGB32, mipmap: true);
+			if (tex.LoadImage(fileData))
 			{
-				MugShot = imageCache[MugShotUrl];
-			}, MugShotUrl);
-			return;
-		}
-		imageCache.Add(MugShotUrl, null);
-		SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", MugShotUrl, delegate(WebResponse response)
-		{
-			if (response.Request.error == null)
-			{
-				MugShot = response.Request.textureNonReadable;
-				MugShot = new Texture2D(MugShot.width, MugShot.height, TextureFormat.ARGB32, mipmap: true);
-				MugShot.wrapMode = TextureWrapMode.Clamp;
-				response.Request.LoadImageIntoTexture(MugShot);
-				imageCache[MugShotUrl] = MugShot;
+				tex.wrapMode = TextureWrapMode.Clamp;
+				MugShot = tex;
 			}
 			else
 			{
-				imageCache[MugShotUrl] = null;
+				MugShot = null;
 			}
-		});
+		}
+		else
+		{
+			MugShot = null;
+		}
 	}
 
 	public void SetMugShot(Texture2D mugshot)

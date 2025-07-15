@@ -42,4 +42,13 @@ public class PlayerAvatarData
 			SaveManager.Instance.MarkDirty();
 		}
 	}
+	public static void SaveMugShot(Texture2D mugshot)
+	{
+		if (mugshot == null)
+		{
+			Debug.LogWarning("Attempted to save null mugshot.");
+			return;
+		}
+		SaveManager.Instance.SaveTextureToFile(mugshot, "avatar_mugshot.png");
+	}
 }

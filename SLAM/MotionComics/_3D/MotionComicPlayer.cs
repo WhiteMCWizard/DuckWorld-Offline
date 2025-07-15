@@ -64,7 +64,7 @@ public class MotionComicPlayer : ViewController
 				Game game = location.Games.FirstOrDefault((Game g) => g.SceneMotionComicName == Application.loadedLevelName);
 				if (game != null)
 				{
-					ApiClient.SubmitScore(game.Id, 1, game.RequiredDifficultyToUnlockNextGame.ToString(), 0, gameCompleted: false, delegate
+					SaveManager.Instance.GetSaveData().SaveScore(game.Id, 1, game.RequiredDifficultyToUnlockNextGame.ToString(), 0, gameCompleted: false, delegate
 					{
 						DataStorage.GetProgressionData(null);
 					});

@@ -29,8 +29,6 @@ public static class ApiClient
 
 	private static string USER_FRIENDS_URL => API_URL + "/users/{0}/friends/";
 
-	private static string SCORES_URL => API_URL + "/users/{0}/scores/?complete={1}";
-
 	private static string HIGHSCORES_URL => API_URL + "/users/{0}/games/{1}/highscores/?level={2}&difficulty={3}";
 
 	private static string GHOST_URL => API_URL + "/users/{0}/ghosts/?game={1}&level={2}";
@@ -126,24 +124,6 @@ public static class ApiClient
 				callback(token.Token);
 			}
 		});
-	}
-
-	public static WebRequest SubmitScore(int gameId, int score, string difficulty, int elapsedMilliseconds, bool gameCompleted, Action<UserScore> callback)
-	{
-		return SubmitScore(gameId, score, difficulty, "default", elapsedMilliseconds, gameCompleted, callback);
-	}
-
-	public static WebRequest SubmitScore(int gameId, int score, string difficulty, string levelName, int elapsedMilliseconds, bool gameCompleted, Action<UserScore> callback)
-	{
-		Dictionary<string, object> dictionary = new Dictionary<string, object>();
-		dictionary.Add("game", gameId.ToString());
-		dictionary.Add("score", score.ToString());
-		dictionary.Add("difficulty", difficulty);
-		dictionary.Add("time", elapsedMilliseconds.ToString());
-		dictionary.Add("gameuser", UserId.ToString());
-		dictionary.Add("level", levelName);
-		Dictionary<string, object> data = dictionary;
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("POST", string.Format(SCORES_URL, UserId, (!gameCompleted) ? "0" : "1"), data, callback);
 	}
 
 	public static WebRequest GetHighscores(int gameId, string difficulty, Action<HighScore[]> callback, string levelname = "default")

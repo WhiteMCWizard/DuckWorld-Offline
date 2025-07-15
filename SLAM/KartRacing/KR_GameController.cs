@@ -256,7 +256,7 @@ public class KR_GameController : GameController
 		bool gameCompleted = !UserProfile.Current.IsFree && SelectedLevel<LevelSetting>().Index >= Levels.Length - 1;
 		if ((SelectedLevel<KR_TrackInfo>().mode == KRGameMode.Race && (flag || GameController.ChallengeAccepted != null)) || SelectedLevel<KR_TrackInfo>().mode == KRGameMode.Time)
 		{
-			ApiClient.SubmitScore(GameId, trackTimeInMilisec, SelectedLevel<LevelSetting>().Difficulty, trackTimeInMilisec, gameCompleted, base.onScoresSubmitted);
+			SaveManager.Instance.GetSaveData().SaveScore(GameId, trackTimeInMilisec, SelectedLevel<LevelSetting>().Difficulty, trackTimeInMilisec, gameCompleted, base.onScoresSubmitted);
 		}
 	}
 

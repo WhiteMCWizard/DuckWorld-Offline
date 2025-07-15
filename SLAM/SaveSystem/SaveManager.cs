@@ -67,4 +67,31 @@ public class SaveManager
             IsDirty = true;
         }
     }
+
+    public void SaveTextureToFile(Texture2D texture, string filePath)
+    {
+        if (texture == null)
+        {
+            Debug.LogError("Cannot save null texture.");
+            return;
+        }
+
+        byte[] bytes = texture.EncodeToPNG();
+        if (bytes == null || bytes.Length == 0)
+        {
+            Debug.LogError("Failed to encode texture to PNG.");
+            return;
+        }
+
+        try
+        {
+            string fullPath = System.IO.Path.Combine(Application.persistentDataPath, filePath);
+            System.IO.File.WriteAllBytes(fullPath, bytes);
+            Debug.Log($"Texture saved to {filePath}");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to save texture: {ex.Message}");
+        }
+    }
 }

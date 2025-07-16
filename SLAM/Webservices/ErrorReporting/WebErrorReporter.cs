@@ -63,11 +63,6 @@ public class WebErrorReporter : MonoBehaviour
 
 	private void onLogoutEvent(Webservice.LogoutEvent evt)
 	{
-		ApiClient.Logout();
-		UserProfile.UnsetCurrentProfileData();
-		AvatarSystem.UnsetPlayerConfiguration();
-		DataStorage.DeleteAll();
-		SingletonMonobehaviour<Webservice>.Instance.ReceiveToken(null, string.Empty);
 		SceneManager.Load("Login", evt.LoginLoadedCallback);
 	}
 }

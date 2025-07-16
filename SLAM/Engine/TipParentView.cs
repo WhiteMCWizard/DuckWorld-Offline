@@ -37,13 +37,10 @@ public class TipParentView : View
 
 	public void OnSendClicked()
 	{
-		ApiClient.TipAParent(emailInput.value, delegate
+		if (base.IsOpen)
 		{
-			if (base.IsOpen)
-			{
-				Close();
-			}
-		});
+			Close();
+		}
 	}
 
 	private bool isValidEmail(string email)

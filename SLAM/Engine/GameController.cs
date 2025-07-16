@@ -720,8 +720,6 @@ public abstract class GameController : ViewController
 				{ "Difficulty", selectedLevel.Difficulty }
 			};
 			GameEvents.Invoke(trackingEvent);
-			ApiClient.SendChallengeResult(ChallengeAccepted.Sender.Id, ChallengeAccepted.Game.Id, selectedLevel.Difficulty, TotalScore, ChallengeAccepted.ScoreSender, null);
-			ApiClient.UpdateScoreRecipientForChallenge(ChallengeAccepted.Id, TotalScore, null);
 		}
 	}
 
@@ -858,7 +856,6 @@ public abstract class GameController : ViewController
 	public virtual void OpenHighscores()
 	{
 		OpenView<HighscoresView>().SetInfo(selectedLevel);
-		ApiClient.GetHighscores(GameId, selectedLevel.Difficulty, HandleHighscores);
 	}
 
 	public virtual void CloseHighscores()
@@ -888,7 +885,6 @@ public abstract class GameController : ViewController
 			{ "Difficulty", selectedLevel.Difficulty }
 		};
 		GameEvents.Invoke(trackingEvent);
-		ApiClient.ChallengeFriend(ChallengeUser.Id, GameId, TotalScore, selectedLevel.Difficulty, null);
 		if (IsViewOpen<ChallengeView>())
 		{
 			GetView<ChallengeView>().OnFriendChallenged(otherPlayer);

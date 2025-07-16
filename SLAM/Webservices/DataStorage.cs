@@ -71,13 +71,5 @@ public static class DataStorage
 			callback(friends);
 			return;
 		}
-		ApiClient.GetFriends(delegate(UserProfile[] frnds)
-		{
-			friends = frnds;
-			if (callback != null)
-			{
-				callback(friends);
-			}
-		});
 	}
 }

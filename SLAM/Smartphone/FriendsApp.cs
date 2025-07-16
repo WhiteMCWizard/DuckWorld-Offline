@@ -39,22 +39,10 @@ public class FriendsApp : AppController
 
 	public void Search(string name, Action<UserProfile[]> callback)
 	{
-		ApiClient.SearchPlayerByName(name, delegate(UserProfile[] results)
-		{
-			IEnumerable<int> collection = friends.Select((UserProfile f) => f.Id);
-			List<int> friendsPlusMe = new List<int>(collection);
-			friendsPlusMe.Add(UserProfile.Current.Id);
-			IEnumerable<UserProfile> notFriends = results.Where((UserProfile profile) => !friendsPlusMe.Contains(profile.Id));
-			Webservice.WaitFor(delegate
-			{
-				callback(notFriends.ToArray());
-			}, notFriends.Select((UserProfile p) => p.MugShotUrl));
-		});
 	}
 
 	private void onInviteUser(InviteUserEvent evt)
 	{
-		ApiClient.SendFriendRequest(evt.User.Id, null);
 	}
 
 	protected override void checkForNotifications(Action<AppChangedEvent> eventCallback)

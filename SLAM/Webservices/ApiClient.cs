@@ -31,10 +31,6 @@ public static class ApiClient
 
 	private static string HIGHSCORES_URL => API_URL + "/users/{0}/games/{1}/highscores/?level={2}&difficulty={3}";
 
-	private static string GHOST_URL => API_URL + "/users/{0}/ghosts/?game={1}&level={2}";
-
-	private static string GHOST_URL2 => API_URL + "/users/{0}/ghosts/";
-
 	private static string INVENTORY_BUY_URL => API_URL + "/users/{0}/inventory/buy/";
 
 	private static string MESSAGES_DETAIL_URL => API_URL + "/users/{0}/messages/{1}/";
@@ -130,54 +126,6 @@ public static class ApiClient
 	public static WebRequest PurchaseItems(int[] shopItemIds, int shopId, Action<bool> callback = null)
 	{
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("POST", string.Format(INVENTORY_BUY_URL, UserId), new Dictionary<string, object> { { "shopitems", shopItemIds } }, validateResponseStatus(201, callback));
-	}
-
-	public static WebRequest GetTimeTrialConfiguration(int userId, int gameId, string difficulty, Action<GhostRecording[]> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(GHOST_URL, userId, gameId, difficulty), callback);
-	}
-
-	public static WebRequest LoadGhostRecording(GhostRecording recording, Action<GhostRecordingData> callback)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", recording.RecordingUrl, delegate(WebResponse response)
-		{
-			if (callback != null)
-			{
-				GhostRecordingData obj = default(GhostRecordingData);
-				if (response.StatusCode == 200)
-				{
-					try
-					{
-						BinaryFormatter binaryFormatter = new BinaryFormatter();
-						MemoryStream serializationStream = new MemoryStream(response.Request.bytes);
-						obj = (GhostRecordingData)binaryFormatter.Deserialize(serializationStream);
-					}
-					catch (Exception ex)
-					{
-						Debug.LogError("LoadGhostRecording failed!" + Environment.NewLine + ex);
-						obj = default(GhostRecordingData);
-					}
-				}
-				callback(obj);
-			}
-		});
-	}
-
-	public static WebRequest SubmitGhostRecording(int gameId, int difficulty, int elapsedMilliseconds, GhostRecordingData recording, Action<string> callback)
-	{
-		WWWForm wWWForm = new WWWForm();
-		wWWForm.AddField("game", gameId);
-		wWWForm.AddField("level", difficulty);
-		wWWForm.AddField("gameuser", UserId.ToString());
-		wWWForm.AddField("kart_config", JsonMapper.ToJson(recording.Kart));
-		wWWForm.AddField("avatar_config", JsonMapper.ToJson(AvatarSystem.GetPlayerConfiguration()));
-		wWWForm.AddField("time", elapsedMilliseconds);
-		string hash = WebRequest.CalculateHash(wWWForm);
-		BinaryFormatter binaryFormatter = new BinaryFormatter();
-		MemoryStream memoryStream = new MemoryStream();
-		binaryFormatter.Serialize(memoryStream, recording);
-		wWWForm.AddBinaryData("coords", memoryStream.GetBuffer());
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("POST", string.Format(GHOST_URL2, UserId), hash, wWWForm, callback);
 	}
 
 	public static WebRequest SendFriendRequest(int recipientId, Action<bool> callback)

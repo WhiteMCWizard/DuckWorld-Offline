@@ -96,7 +96,7 @@ public class Shop : Inventory
 			itemList.Add(purchasedItem);
 			saveData.purchasedShopItems = itemList.ToArray();
 		}
-
+		saveData.walletTotal -= ShoppingCartValue;
 		// Save changes
 		SaveManager.Instance.MarkDirty();
 		foreach (ShopVariationDefinition item in shoppingCart)

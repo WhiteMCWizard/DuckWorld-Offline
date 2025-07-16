@@ -290,6 +290,10 @@ public class AchievementManager : SingletonMonobehaviour<AchievementManager>
 			AchievementId.COLLECT_KART_EASY,
 			AchievementId.GET_FRIENDS_EASY,
 			AchievementId.GET_FRIENDS_MEDIUM,
+			AchievementId.ACCEPT_CHALLENGES_EASY,
+			AchievementId.ACCEPT_CHALLENGES_MEDIUM,
+			AchievementId.WIN_CHALLENGES_EASY,
+			AchievementId.WIN_CHALLENGES_MEDIUM,
 		};
 
 		// Create a default achievement for each achievement ID

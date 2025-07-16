@@ -7,6 +7,12 @@ namespace SLAM.Hub;
 
 public class HubMenuView : View
 {
+	protected override void Start()
+	{
+		base.Start();
+		GameObject.Find("LogoutButton").SetActive(false);
+	}
+
 	public void OnHelpClicked()
 	{
 		ApiClient.OpenHelpPage();
@@ -22,7 +28,6 @@ public class HubMenuView : View
 
 	public void OnLogoutClicked()
 	{
-		Controller<HubController>().LogoutCurrentUser();
 	}
 
 	public void OnQuitClicked()

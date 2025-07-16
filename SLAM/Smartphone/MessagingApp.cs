@@ -59,7 +59,6 @@ public class MessagingApp : AppController
 			return;
 		}
 
-		// Get messages from local storage instead of API
 		LoadMessagesFromLocal();
 
 		unreadMessages = allMessages.Where((Message m) => !m.Archived && m.Type != Message.MessageType.JobNotification).ToList();
@@ -81,7 +80,6 @@ public class MessagingApp : AppController
 		}
 		else
 		{
-			CreateDefaultMessagesIfNeeded();
 			allMessages = saveData.messages?.Where((Message m) => m.Type != Message.MessageType.JobNotification).ToList() ?? new List<Message>();
 		}
 	}
@@ -91,33 +89,6 @@ public class MessagingApp : AppController
 		var saveData = SaveManager.Instance.GetSaveData();
 		saveData.messages = allMessages.ToArray();
 		SaveManager.Instance.MarkDirty();
-	}
-
-	private void CreateDefaultMessagesIfNeeded()
-	{
-		var saveData = SaveManager.Instance.GetSaveData();
-		if (saveData.messages == null || saveData.messages.Length == 0)
-		{
-			// Create some default messages for demonstration
-			var defaultMessages = new List<Message>();
-
-			// Add a welcome message
-			var welcomeMessage = new Message
-			{
-				Id = 1,
-				Type = Message.MessageType.Notification,
-				Sender = new UserProfile { Name = "System", Id = 0 },
-				MessageBody = "Test",
-				Archived = false,
-				dateCreated = DateTime.Now.ToString(),
-				dateModified = DateTime.Now.ToString()
-			};
-			defaultMessages.Add(welcomeMessage);
-
-			saveData.messages = defaultMessages.ToArray();
-			SaveManager.Instance.MarkDirty();
-			allMessages = defaultMessages;
-		}
 	}
 
 	public void AddMessage(Message message)

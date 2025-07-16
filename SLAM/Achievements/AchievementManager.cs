@@ -316,7 +316,7 @@ public class AchievementManager : SingletonMonobehaviour<AchievementManager>
 
 	private void SaveAchievementsToLocal()
 	{
-		if (SaveManager.Instance.IsLoaded && Achievements != null)
+		if (Achievements != null)
 		{
 			var saveData = SaveManager.Instance.GetSaveData();
 			saveData.userAchievements = Achievements.ToArray();

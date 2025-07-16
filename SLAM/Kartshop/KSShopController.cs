@@ -44,7 +44,7 @@ public class KSShopController : ViewController
 		AddViews(views);
 		inventory = GetComponent<KSShop>();
 		OpenView<LoadingView>();
-		KSShop.GetUserKart(delegate(KartConfigurationData kart)
+		KSShop.GetUserKart(delegate (KartConfigurationData kart)
 		{
 			selectedKart = kart;
 			inventory.RetrieveInventory(onInventoryRetrieved);
@@ -151,27 +151,19 @@ public class KSShopController : ViewController
 
 	private void onInventoryRetrieved()
 	{
-		if (SaveManager.Instance.IsLoaded)
-		{
-			// Get wallet total from local save data
-			cashInWallet = SaveManager.Instance.GetSaveData().walletTotal;
-			
-			CloseView<LoadingView>();
-			previewKart = selectedKart.Clone() as KartConfigurationData;
-			spawnConfiguration(previewKart);
-			OpenView<KSShopView>();
-			OpenView<KSEditKartView>().UpdateSelection(previewKart);
-			OpenView<SLAM.Shops.HUDView>().SetInfo(cashInWallet);
-			OpenView<KSStatsView>().SetInfo(selectedKart);
-			inventory.ClearCart();
-			syncShop();
-			syncShoppingBasket();
-		}
-		else
-		{
-			Debug.LogError("SaveManager is not loaded. Cannot retrieve wallet total.");
-			CloseView<LoadingView>();
-		}
+		// Get wallet total from local save data
+		cashInWallet = SaveManager.Instance.GetSaveData().walletTotal;
+
+		CloseView<LoadingView>();
+		previewKart = selectedKart.Clone() as KartConfigurationData;
+		spawnConfiguration(previewKart);
+		OpenView<KSShopView>();
+		OpenView<KSEditKartView>().UpdateSelection(previewKart);
+		OpenView<SLAM.Shops.HUDView>().SetInfo(cashInWallet);
+		OpenView<KSStatsView>().SetInfo(selectedKart);
+		inventory.ClearCart();
+		syncShop();
+		syncShoppingBasket();
 	}
 
 	private void onCategoryClicked(KSShopCategoryClickedEvent evt)
@@ -195,7 +187,7 @@ public class KSShopController : ViewController
 	private void saveKart(KartConfigurationData kart)
 	{
 		kart.active = true;
-		SaveManager.Instance.GetSaveData().SaveKartConfiguration(kart, new Texture2D(4, 4).EncodeToPNG(), delegate(KartConfigurationData result)
+		SaveManager.Instance.GetSaveData().SaveKartConfiguration(kart, new Texture2D(4, 4).EncodeToPNG(), delegate (KartConfigurationData result)
 		{
 			KartSystem.PlayerKartConfiguration = result;
 		});
@@ -228,7 +220,7 @@ public class KSShopController : ViewController
 	{
 		OpenView<LoadingView>();
 		int costs = inventory.ShoppingCartValue;
-		inventory.PurchaseShoppingCartContents(delegate(Shop.Feedback feedback)
+		inventory.PurchaseShoppingCartContents(delegate (Shop.Feedback feedback)
 		{
 			if (costs <= cashInWallet)
 			{

@@ -173,7 +173,7 @@ public abstract class GameController : ViewController
 	{
 		base.Start();
 		wasInvitedForGame = GameId == InviteSystem.AcceptedInvitationGameId;
-		DataStorage.GetLocationsData(delegate(Location[] locs)
+		DataStorage.GetLocationsData(delegate (Location[] locs)
 		{
 			currentLocationInfo = locs.FirstOrDefault((Location l) => l.Games.Any((Game loc) => loc.Id == GameId));
 			currentGameInfo = currentLocationInfo.GetGame(GameId);
@@ -620,16 +620,10 @@ public abstract class GameController : ViewController
 			if (currentGameInfo.Type == Game.GameType.Job)
 			{
 				// Update local wallet instead of using API
-				if (SaveManager.Instance.IsLoaded)
-				{
-					var saveData = SaveManager.Instance.GetSaveData();
-					saveData.walletTotal += coinRewardForThisLevel;
-					SaveManager.Instance.MarkDirty();
-				}
-				else
-				{
-					Debug.LogError("SaveManager is not loaded. Cannot add coins to wallet.");
-				}
+				var saveData = SaveManager.Instance.GetSaveData();
+				saveData.walletTotal += coinRewardForThisLevel;
+				SaveManager.Instance.MarkDirty();
+
 				trackingEvent = new TrackingEvent();
 				trackingEvent.Type = TrackingEvent.TrackingType.DuckcoinsEarned;
 				trackingEvent.Arguments = new Dictionary<string, object>
@@ -686,13 +680,13 @@ public abstract class GameController : ViewController
 
 	protected void onScoresSubmitted(UserScore score)
 	{
-		DataStorage.GetProgressionData(delegate(UserGameDetails[] oldProgressionData)
+		DataStorage.GetProgressionData(delegate (UserGameDetails[] oldProgressionData)
 		{
-			DataStorage.GetProgressionData(delegate(UserGameDetails[] newProgressionData)
+			DataStorage.GetProgressionData(delegate (UserGameDetails[] newProgressionData)
 			{
 				if (currentGameInfo.NextGameId.HasValue && !oldProgressionData.Any((UserGameDetails g) => g.GameId == currentGameInfo.NextGameId.Value) && newProgressionData.Any((UserGameDetails g) => g.GameId == currentGameInfo.NextGameId.Value))
 				{
-					DataStorage.GetGameById(currentGameInfo.NextGameId.Value, delegate(Game nextGame)
+					DataStorage.GetGameById(currentGameInfo.NextGameId.Value, delegate (Game nextGame)
 					{
 						if (nextGame.IsPremiumAvailable)
 						{
@@ -849,7 +843,7 @@ public abstract class GameController : ViewController
 
 	public virtual void OpenChallenge()
 	{
-		DataStorage.GetFriends(delegate(UserProfile[] friends)
+		DataStorage.GetFriends(delegate (UserProfile[] friends)
 		{
 			OpenView<ChallengeView>().SetData(selectedLevel.Difficulty);
 			GetView<ChallengeView>().SetFriends(friends);

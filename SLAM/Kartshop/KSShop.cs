@@ -122,7 +122,7 @@ public class KSShop : MonoBehaviour
 
 	public void ClearCart()
 	{
-		shoppingCart.Clear();
+		shoppingCart = new List<KSShopItemDefinition>();
 	}
 
 	public void PurchaseShoppingCartContents(Action<Shop.Feedback> callback)
@@ -139,16 +139,31 @@ public class KSShop : MonoBehaviour
 			callback(new Shop.Feedback(succes: false, Localization.Get("WR_ERROR_ITEM_ALREADY_BOUGHT") + " " + shoppingCart[i].Item.ShopItem.Title));
 			return;
 		}
-		ApiClient.PurchaseItems(array, filter.ShopId, delegate (bool succes)
+
+		var saveData = SaveManager.Instance.GetSaveData();
+		foreach (int itemId in array)
 		{
-			if (succes)
+			// Create new purchased item data and add to array
+			var purchasedItem = new PurchasedShopItemData
 			{
-				foreach (KSShopItemDefinition item in shoppingCart)
-				{
-					GameEvents.Invoke(new TrackingEvent
-					{
-						Type = TrackingEvent.TrackingType.ItemBought,
-						Arguments = new Dictionary<string, object>
+				ShopItemId = itemId,
+			};
+
+			// Add to purchased items list
+			var itemList = saveData.purchasedShopItems.ToList();
+			itemList.Add(purchasedItem);
+			saveData.purchasedShopItems = itemList.ToArray();
+		}
+		saveData.walletTotal -= ShoppingCartValue;
+		// Save changes
+		SaveManager.Instance.MarkDirty();
+
+		foreach (KSShopItemDefinition item in shoppingCart)
+		{
+			GameEvents.Invoke(new TrackingEvent
+			{
+				Type = TrackingEvent.TrackingType.ItemBought,
+				Arguments = new Dictionary<string, object>
 						{
 							{
 								"ItemGUID",
@@ -159,17 +174,11 @@ public class KSShop : MonoBehaviour
 								item.Item.ShopItem.Price
 							}
 						}
-					});
-					item.Item.HasBeenBought = true;
-				}
-				shoppingCart.Clear();
-				callback(new Shop.Feedback(succes: true, string.Empty));
-			}
-			else
-			{
-				callback(new Shop.Feedback(succes: false, StringFormatter.GetLocalizationFormatted("WR_ERROR_PURCHASE_FAILED", shoppingCart.Count)));
-			}
-		});
+			});
+			item.Item.HasBeenBought = true;
+		}
+		shoppingCart.Clear();
+		callback(new Shop.Feedback(succes: true, string.Empty));
 	}
 
 	public static void GetUserKart(Action<KartConfigurationData> callback)

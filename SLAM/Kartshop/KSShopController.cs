@@ -151,9 +151,7 @@ public class KSShopController : ViewController
 
 	private void onInventoryRetrieved()
 	{
-		// Get wallet total from local save data
 		cashInWallet = SaveManager.Instance.GetSaveData().walletTotal;
-
 		CloseView<LoadingView>();
 		previewKart = selectedKart.Clone() as KartConfigurationData;
 		spawnConfiguration(previewKart);

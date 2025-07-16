@@ -31,8 +31,6 @@ public static class ApiClient
 
 	private static string HIGHSCORES_URL => API_URL + "/users/{0}/games/{1}/highscores/?level={2}&difficulty={3}";
 
-	private static string INVENTORY_BUY_URL => API_URL + "/users/{0}/inventory/buy/";
-
 	private static string MESSAGES_DETAIL_URL => API_URL + "/users/{0}/messages/{1}/";
 
 	private static string MESSAGES_ADDFRIEND_URL => API_URL + "/users/{0}/messages/addfriend/";
@@ -121,11 +119,6 @@ public static class ApiClient
 	public static WebRequest GetHighscores(int gameId, string difficulty, Action<HighScore[]> callback, string levelname = "default")
 	{
 		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("GET", string.Format(HIGHSCORES_URL, UserId.ToString(), gameId.ToString(), levelname, difficulty), callback);
-	}
-
-	public static WebRequest PurchaseItems(int[] shopItemIds, int shopId, Action<bool> callback = null)
-	{
-		return SingletonMonobehaviour<Webservice>.Instance.DoRequest("POST", string.Format(INVENTORY_BUY_URL, UserId), new Dictionary<string, object> { { "shopitems", shopItemIds } }, validateResponseStatus(201, callback));
 	}
 
 	public static WebRequest SendFriendRequest(int recipientId, Action<bool> callback)

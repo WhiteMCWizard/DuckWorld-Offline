@@ -123,15 +123,17 @@ public class KR_GameController : GameController
 				userId = GameController.ChallengeAccepted.Sender.Id;
 				difficulty = SelectedLevel<LevelSetting>().Difficulty;
 			}
-			ApiClient.GetTimeTrialConfiguration(userId, GameId, difficulty, delegate(GhostRecording[] recordings)
+			int difficultyInt;
+			if (!int.TryParse(difficulty, out difficultyInt))
 			{
-				if (recordings.Length > 0)
+				difficultyInt = 0; // fallback if parsing fails
+			}
+			SaveManager.Instance.GetBestGhost(userId, difficultyInt, delegate(GhostRecordingData recording)
+			{
+				if (!Equals(recording, default(GhostRecordingData)))
 				{
-					ApiClient.LoadGhostRecording(recordings[0], delegate(GhostRecordingData grd)
-					{
-						ghostData = grd;
-						base.StateMachine.SwitchTo("Racing");
-					});
+					ghostData = recording;
+					base.StateMachine.SwitchTo("Racing");
 				}
 				else
 				{

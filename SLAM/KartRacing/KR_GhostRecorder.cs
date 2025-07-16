@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SLAM.Kart;
+using SLAM.SaveSystem;
 using SLAM.Webservices;
 using UnityEngine;
 
@@ -68,7 +69,7 @@ public class KR_GhostRecorder : MonoBehaviour
 
 	private void onRecordingStopped()
 	{
-		ApiClient.SubmitGhostRecording(gameIndex, trackIndex, Mathf.CeilToInt(kart.Timer.CurrentTime * 100f), GetRecording(), null);
+		SaveManager.Instance.SaveGhost(gameIndex, trackIndex, Mathf.CeilToInt(kart.Timer.CurrentTime * 100f), GetRecording());
 	}
 
 	private void Update()

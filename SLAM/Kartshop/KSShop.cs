@@ -139,7 +139,7 @@ public class KSShop : MonoBehaviour
 			callback(new Shop.Feedback(succes: false, Localization.Get("WR_ERROR_ITEM_ALREADY_BOUGHT") + " " + shoppingCart[i].Item.ShopItem.Title));
 			return;
 		}
-		ApiClient.PurchaseItems(array, filter.ShopId, delegate(bool succes)
+		ApiClient.PurchaseItems(array, filter.ShopId, delegate (bool succes)
 		{
 			if (succes)
 			{
@@ -174,182 +174,157 @@ public class KSShop : MonoBehaviour
 
 	public static void GetUserKart(Action<KartConfigurationData> callback)
 	{
-		if (SaveManager.Instance.IsLoaded)
-		{
-			var saveData = SaveManager.Instance.GetSaveData();
-			KartConfigurationData[] karts = saveData.kartConfigurations;
+		var saveData = SaveManager.Instance.GetSaveData();
+		KartConfigurationData[] karts = saveData.kartConfigurations;
 
-			if (karts.Length == 0)
+		if (karts.Length == 0)
+		{
+			KartItemLibrary itemLibrary = KartItemLibrary.GetItemLibrary();
+			KartConfigurationData kartConfigurationData = (KartConfigurationData)itemLibrary.DefaultConfigurations.Last().Clone();
+			kartConfigurationData.id = -1;
+			kartConfigurationData.active = true;
+			BuyKart(kartConfigurationData, 0, delegate (KartConfigurationData newKart)
 			{
-				KartItemLibrary itemLibrary = KartItemLibrary.GetItemLibrary();
-				KartConfigurationData kartConfigurationData = (KartConfigurationData)itemLibrary.DefaultConfigurations.Last().Clone();
-				kartConfigurationData.id = -1;
-				kartConfigurationData.active = true;
-				BuyKart(kartConfigurationData, 0, delegate (KartConfigurationData newKart)
-				{
-					callback(newKart);
-				});
-			}
-			else
-			{
-				KartConfigurationData obj = null;
-				for (int num = 0; num < karts.Length; num++)
-				{
-					if (karts[num].active)
-					{
-						obj = karts[num];
-					}
-				}
-				callback(obj);
-			}
+				callback(newKart);
+			});
 		}
 		else
 		{
-			Debug.LogError("SaveManager is not loaded. Cannot retrieve user kart.");
-			callback(null);
+			KartConfigurationData obj = null;
+			for (int num = 0; num < karts.Length; num++)
+			{
+				if (karts[num].active)
+				{
+					obj = karts[num];
+				}
+			}
+			callback(obj);
 		}
 	}
 
 	public static void BuyKart(KartConfigurationData kart, int price, Action<KartConfigurationData> callback)
 	{
-		if (SaveManager.Instance.IsLoaded)
-		{
-			var saveData = SaveManager.Instance.GetSaveData();
-			int total = saveData.walletTotal;
-			
-			if (total >= price)
-			{
-				// Update local wallet instead of using API
-				saveData.walletTotal -= price;
-				
-				List<int> list = new List<int>();
-				list.AddRange(from si in AllShops.AllItems
-					where kart.HasItem(si.GUID)
-					select si.Id);
-				
-				// Local implementation for adding items to inventory
-				bool success = true;
-				
-				try
-				{
-					// Add items to local inventory
-					var itemList = saveData.purchasedShopItems.ToList();
-					foreach (int itemId in list)
-					{
-						// Create new purchased item data
-						var purchasedItem = new PurchasedShopItemData
-						{
-							ShopItemId = itemId,
-						};
-						
-						// Add to purchased items list
-						itemList.Add(purchasedItem);
-					}
-					saveData.purchasedShopItems = itemList.ToArray();
-					
-					// Save changes
-					SaveManager.Instance.MarkDirty();
-				}
-				catch (System.Exception ex)
-				{
-					Debug.LogError($"Failed to add items to inventory: {ex.Message}");
-					success = false;
-				}
+		var saveData = SaveManager.Instance.GetSaveData();
+		int total = saveData.walletTotal;
 
-				// Continue with success callback
-				if (success)
+		if (total >= price)
+		{
+			// Update local wallet instead of using API
+			saveData.walletTotal -= price;
+
+			List<int> list = new List<int>();
+			list.AddRange(from si in AllShops.AllItems
+						  where kart.HasItem(si.GUID)
+						  select si.Id);
+
+			// Local implementation for adding items to inventory
+			bool success = true;
+
+			try
+			{
+				// Add items to local inventory
+				var itemList = saveData.purchasedShopItems.ToList();
+				foreach (int itemId in list)
 				{
-					KartConfigurationData kartConfigurationData = (KartConfigurationData)kart.Clone();
-					kartConfigurationData.id = -1;
-					kartConfigurationData.active = true;
-					SaveManager.Instance.GetSaveData().SaveKartConfiguration(kartConfigurationData, new Texture2D(4, 4).EncodeToPNG(), delegate (KartConfigurationData config)
+					// Create new purchased item data
+					var purchasedItem = new PurchasedShopItemData
 					{
-						callback(config);
-					});
-					AudioController.Play("Avatar_clothes_buyItems");
+						ShopItemId = itemId,
+					};
+
+					// Add to purchased items list
+					itemList.Add(purchasedItem);
 				}
-				else
+				saveData.purchasedShopItems = itemList.ToArray();
+
+				// Save changes
+				SaveManager.Instance.MarkDirty();
+			}
+			catch (System.Exception ex)
+			{
+				Debug.LogError($"Failed to add items to inventory: {ex.Message}");
+				success = false;
+			}
+
+			// Continue with success callback
+			if (success)
+			{
+				KartConfigurationData kartConfigurationData = (KartConfigurationData)kart.Clone();
+				kartConfigurationData.id = -1;
+				kartConfigurationData.active = true;
+				SaveManager.Instance.GetSaveData().SaveKartConfiguration(kartConfigurationData, new Texture2D(4, 4).EncodeToPNG(), delegate (KartConfigurationData config)
 				{
-					Debug.Log("Failed adding items to inventory :(");
-					callback(null);
-				}
+					callback(config);
+				});
+				AudioController.Play("Avatar_clothes_buyItems");
 			}
 			else
 			{
-				Debug.LogError("No money: Want to spend " + price + " but have " + total);
+				Debug.Log("Failed adding items to inventory :(");
 				callback(null);
 			}
 		}
 		else
 		{
-			Debug.LogError("SaveManager is not loaded. Cannot access wallet data.");
+			Debug.LogError("No money: Want to spend " + price + " but have " + total);
 			callback(null);
 		}
 	}
 
 	protected void processShopItems(KSFilter filter, ShopItemData[] webserviceItems, Action callback)
 	{
-		// Replace ApiClient.GetPlayerPurchasedShopItems with local implementation
-		if (SaveManager.Instance.IsLoaded)
+		// Get purchased items from local save data
+		PurchasedShopItemData[] purchasedItems = SaveManager.Instance.GetSaveData().purchasedShopItems;
+
+		KartItemLibrary itemLibrary = KartItemLibrary.GetItemLibrary();
+		Dictionary<KartSystem.ItemCategory, List<KSShopLibraryItem>> dictionary = new Dictionary<KartSystem.ItemCategory, List<KSShopLibraryItem>>();
+		List<KSShopCategoryDefinition> list = new List<KSShopCategoryDefinition>();
+		ShopItemData[] array = webserviceItems;
+		foreach (ShopItemData shopItem in array)
 		{
-			// Get purchased items from local save data
-			PurchasedShopItemData[] purchasedItems = SaveManager.Instance.GetSaveData().purchasedShopItems;
-			
-			KartItemLibrary itemLibrary = KartItemLibrary.GetItemLibrary();
-			Dictionary<KartSystem.ItemCategory, List<KSShopLibraryItem>> dictionary = new Dictionary<KartSystem.ItemCategory, List<KSShopLibraryItem>>();
-			List<KSShopCategoryDefinition> list = new List<KSShopCategoryDefinition>();
-			ShopItemData[] array = webserviceItems;
-			foreach (ShopItemData shopItem in array)
+			if (shopItem.VisibleInShop || filter.ShowHiddenItems)
 			{
-				if (shopItem.VisibleInShop || filter.ShowHiddenItems)
+				KartItemLibrary.KartItem itemByGUID = itemLibrary.GetItemByGUID(shopItem.GUID);
+				if (itemByGUID == null)
 				{
-					KartItemLibrary.KartItem itemByGUID = itemLibrary.GetItemByGUID(shopItem.GUID);
-					if (itemByGUID == null)
+					Debug.Log("Filter out " + shopItem.GUID);
+				}
+				else if (filter.Categories.Contains(itemByGUID.Category))
+				{
+					if (!dictionary.ContainsKey(itemByGUID.Category))
 					{
-						Debug.Log("Filter out " + shopItem.GUID);
+						dictionary.Add(itemByGUID.Category, new List<KSShopLibraryItem>());
 					}
-					else if (filter.Categories.Contains(itemByGUID.Category))
+					PurchasedShopItemData purchasedShopItemData = purchasedItems.FirstOrDefault((PurchasedShopItemData purchasedShopItemData2) => purchasedShopItemData2.ShopItemId == shopItem.Id);
+					dictionary[itemByGUID.Category].Add(new KSShopLibraryItem
 					{
-						if (!dictionary.ContainsKey(itemByGUID.Category))
-						{
-							dictionary.Add(itemByGUID.Category, new List<KSShopLibraryItem>());
-						}
-						PurchasedShopItemData purchasedShopItemData = purchasedItems.FirstOrDefault((PurchasedShopItemData purchasedShopItemData2) => purchasedShopItemData2.ShopItemId == shopItem.Id);
-						dictionary[itemByGUID.Category].Add(new KSShopLibraryItem
-						{
-							LibraryItem = itemByGUID,
-							ShopItem = shopItem,
-							HasBeenBought = (purchasedShopItemData != null)
-						});
-					}
+						LibraryItem = itemByGUID,
+						ShopItem = shopItem,
+						HasBeenBought = (purchasedShopItemData != null)
+					});
 				}
 			}
-			foreach (KartSystem.ItemCategory category in filter.Categories)
+		}
+		foreach (KartSystem.ItemCategory category in filter.Categories)
+		{
+			if (dictionary.ContainsKey(category))
 			{
-				if (dictionary.ContainsKey(category))
+				KSShopCategoryDefinition kSShopCategoryDefinition = new KSShopCategoryDefinition
 				{
-					KSShopCategoryDefinition kSShopCategoryDefinition = new KSShopCategoryDefinition
+					Category = category,
+					SpriteName = category.ToString(),
+					Items = dictionary[category].Select((KSShopLibraryItem item) => new KSShopItemDefinition
 					{
-						Category = category,
-						SpriteName = category.ToString(),
-						Items = dictionary[category].Select((KSShopLibraryItem item) => new KSShopItemDefinition
-						{
-							Item = item
-						}).ToArray()
-					};
-					if (kSShopCategoryDefinition.Items.Count() > 0)
-					{
-						list.Add(kSShopCategoryDefinition);
-					}
+						Item = item
+					}).ToArray()
+				};
+				if (kSShopCategoryDefinition.Items.Count() > 0)
+				{
+					list.Add(kSShopCategoryDefinition);
 				}
 			}
-			categoryDefinitions = list.ToArray();
-			callback();
 		}
-		else
-		{
-			Debug.LogError("SaveManager is not loaded. Cannot retrieve purchased shop items.");
-			callback();
-		}
+		categoryDefinitions = list.ToArray();
+		callback();
 	}
 }

@@ -172,50 +172,42 @@ public class AvatarCreatorController : ViewController
 		string playerAddress = Localization.Get("AC_STREETNAMES").Split(',').GetRandom();
 		SingletonMonobehaviour<PhotoBooth>.Instance.SayCheese(playerConfig, delegate (Texture2D mugshot)
 		{
-			// Save player name and address locally instead of using API
-			if (SaveManager.Instance.IsLoaded)
+
+			var saveData = SaveManager.Instance.GetSaveData();
+			saveData.profile.Name = playername;
+			saveData.profile.Address = playerAddress;
+
+			// Update current profile reference by calling GetCurrentProfileData
+			UserProfile.GetCurrentProfileData(delegate (UserProfile profile)
 			{
+				AvatarSystem.SavePlayerConfiguration(playerConfig, mugshot);
+				AvatarConfigurationData defaultItems = (AvatarConfigurationData)AvatarItemLibrary.GetItemLibrary(playerConfig).DefaultConfigurations.First().Clone();
+				int[] shopItemIds = (from si in AllShops.AllItems
+									 where playerConfig.Items.Contains(si.GUID) || defaultItems.Items.Contains(si.GUID)
+									 select si.Id).ToArray();
+
 				var saveData = SaveManager.Instance.GetSaveData();
-				saveData.profile.Name = playername;
-				saveData.profile.Address = playerAddress;
-
-				// Update current profile reference by calling GetCurrentProfileData
-				UserProfile.GetCurrentProfileData(delegate (UserProfile profile)
+				foreach (int itemId in shopItemIds)
 				{
-					AvatarSystem.SavePlayerConfiguration(playerConfig, mugshot);
-					AvatarConfigurationData defaultItems = (AvatarConfigurationData)AvatarItemLibrary.GetItemLibrary(playerConfig).DefaultConfigurations.First().Clone();
-					int[] shopItemIds = (from si in AllShops.AllItems
-										 where playerConfig.Items.Contains(si.GUID) || defaultItems.Items.Contains(si.GUID)
-										 select si.Id).ToArray();
-
-					var saveData = SaveManager.Instance.GetSaveData();
-					foreach (int itemId in shopItemIds)
+					// Create new purchased item data and add to array
+					var purchasedItem = new PurchasedShopItemData
 					{
-						// Create new purchased item data and add to array
-						var purchasedItem = new PurchasedShopItemData
-						{
-							ShopItemId = itemId,
-						};
+						ShopItemId = itemId,
+					};
 
-						// Add to purchased items list
-						var itemList = saveData.purchasedShopItems.ToList();
-						itemList.Add(purchasedItem);
-						saveData.purchasedShopItems = itemList.ToArray();
-					}
+					// Add to purchased items list
+					var itemList = saveData.purchasedShopItems.ToList();
+					itemList.Add(purchasedItem);
+					saveData.purchasedShopItems = itemList.ToArray();
+				}
 
-					// Save changes
-					SaveManager.Instance.MarkDirty();
+				// Save changes
+				SaveManager.Instance.MarkDirty();
 
-					// Continue with game loading
-					MotionComicPlayer.SetSceneToLoad("Hub");
-					SceneManager.Load("MC_ADV00_01_Intro");
-				});
-			}
-			else
-			{
-				Debug.LogError("SaveManager is not loaded. Cannot save player configuration.");
-				loadingView.Close();
-			}
+				// Continue with game loading
+				MotionComicPlayer.SetSceneToLoad("Hub");
+				SceneManager.Load("MC_ADV00_01_Intro");
+			});
 		});
 	}
 

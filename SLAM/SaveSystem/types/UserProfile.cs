@@ -74,15 +74,8 @@ public class UserProfile
 
 	public static void GetCurrentProfileData(Action<UserProfile> callback)
 	{
-		if (SaveManager.Instance.IsLoaded)
-		{
-			Current = SaveManager.Instance.GetSaveData().profile;
-			Current.loadMugshot();
-		}
-		else
-		{
-			Current = null;
-		}
+		Current = SaveManager.Instance.GetSaveData().profile;
+		Current.loadMugshot();
 
 		callback?.Invoke(Current);
 	}

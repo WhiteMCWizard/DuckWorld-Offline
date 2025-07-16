@@ -41,7 +41,7 @@ public class ShopController : InventoryController
 			GameEvents.Invoke(new PopupEvent(Localization.Get("UI_ARE_YOU_SURE"), StringFormatter.GetLocalizationFormatted("WR_POPUP_TOTAL_ITEM_COSTS", totalAmount), Localization.Get("UI_YES"), Localization.Get("UI_NO"), delegate
 			{
 				OpenView<LoadingView>();
-				shop.PurchaseShoppingCartContents(delegate(Shop.Feedback result)
+				shop.PurchaseShoppingCartContents(delegate (Shop.Feedback result)
 				{
 					if (result.WasSuccesfull)
 					{
@@ -106,18 +106,11 @@ public class ShopController : InventoryController
 
 	protected override void OnInventoryRetrieved()
 	{
-		if (SaveManager.Instance.IsLoaded)
-			{
-				base.OnInventoryRetrieved();
-				cashInWallet = SaveManager.Instance.GetSaveData().walletTotal;
-				ShopView view = GetView<ShopView>();
-				view.UpdateShoppingCart(shop.ShoppingCart, 0.ToString());
-				view.UpdateWallet(cashInWallet.ToString());
-			}
-			else
-			{
-				Debug.LogError("SaveManager is not loaded. Cannot retrieve wallet total.");
-			}
+		base.OnInventoryRetrieved();
+		cashInWallet = SaveManager.Instance.GetSaveData().walletTotal;
+		ShopView view = GetView<ShopView>();
+		view.UpdateShoppingCart(shop.ShoppingCart, 0.ToString());
+		view.UpdateWallet(cashInWallet.ToString());
 	}
 
 	private void OnItemRemovedFromCart(ShoppingCartItemRemovedEvent evt)

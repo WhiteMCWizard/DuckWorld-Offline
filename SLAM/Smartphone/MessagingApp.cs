@@ -32,11 +32,7 @@ public class MessagingApp : AppController
 	protected override void Start()
 	{
 		base.Start();
-		// Load messages initially
-		if (SaveManager.Instance.IsLoaded)
-		{
-			LoadMessagesFromLocal();
-		}
+		LoadMessagesFromLocal();
 		InvokeRepeating("refreshNotifications", 0f, 10f);
 	}
 
@@ -55,7 +51,7 @@ public class MessagingApp : AppController
 		LoadMessagesFromLocal();
 		OpenView<InboxView>().SetData(allMessages);
 	}
-	
+
 	protected override void checkForNotifications(Action<AppChangedEvent> eventCallback)
 	{
 		if (UserProfile.Current.IsFree)
@@ -78,71 +74,58 @@ public class MessagingApp : AppController
 
 	private void LoadMessagesFromLocal()
 	{
-		if (SaveManager.Instance.IsLoaded)
+		var saveData = SaveManager.Instance.GetSaveData();
+		if (saveData.messages != null && saveData.messages.Length > 0)
 		{
-			var saveData = SaveManager.Instance.GetSaveData();
-			if (saveData.messages != null && saveData.messages.Length > 0)
-			{
-				allMessages = saveData.messages.Where((Message m) => m.Type != Message.MessageType.JobNotification).ToList();
-			}
-			else
-			{
-				CreateDefaultMessagesIfNeeded();
-				allMessages = saveData.messages?.Where((Message m) => m.Type != Message.MessageType.JobNotification).ToList() ?? new List<Message>();
-			}
+			allMessages = saveData.messages.Where((Message m) => m.Type != Message.MessageType.JobNotification).ToList();
 		}
 		else
 		{
-			allMessages = new List<Message>();
+			CreateDefaultMessagesIfNeeded();
+			allMessages = saveData.messages?.Where((Message m) => m.Type != Message.MessageType.JobNotification).ToList() ?? new List<Message>();
 		}
 	}
 
 	private void SaveMessagesToLocal()
 	{
-		if (SaveManager.Instance.IsLoaded)
-		{
-			var saveData = SaveManager.Instance.GetSaveData();
-			saveData.messages = allMessages.ToArray();
-			SaveManager.Instance.MarkDirty();
-		}
+		var saveData = SaveManager.Instance.GetSaveData();
+		saveData.messages = allMessages.ToArray();
+		SaveManager.Instance.MarkDirty();
 	}
 
 	private void CreateDefaultMessagesIfNeeded()
 	{
-		if (SaveManager.Instance.IsLoaded)
+		var saveData = SaveManager.Instance.GetSaveData();
+		if (saveData.messages == null || saveData.messages.Length == 0)
 		{
-			var saveData = SaveManager.Instance.GetSaveData();
-			if (saveData.messages == null || saveData.messages.Length == 0)
+			// Create some default messages for demonstration
+			var defaultMessages = new List<Message>();
+
+			// Add a welcome message
+			var welcomeMessage = new Message
 			{
-				// Create some default messages for demonstration
-				var defaultMessages = new List<Message>();
-				
-				// Add a welcome message
-				var welcomeMessage = new Message
-				{
-					Id = 1,
-					Type = Message.MessageType.Notification,
-					Sender = new UserProfile { Name = "System", Id = 0 },
-					MessageBody = "Test",
-					Archived = false,
-					dateCreated = DateTime.Now.ToString(),
-					dateModified = DateTime.Now.ToString()
-				};
-				defaultMessages.Add(welcomeMessage);
-				
-				saveData.messages = defaultMessages.ToArray();
-				SaveManager.Instance.MarkDirty();
-				allMessages = defaultMessages;
-			}
+				Id = 1,
+				Type = Message.MessageType.Notification,
+				Sender = new UserProfile { Name = "System", Id = 0 },
+				MessageBody = "Test",
+				Archived = false,
+				dateCreated = DateTime.Now.ToString(),
+				dateModified = DateTime.Now.ToString()
+			};
+			defaultMessages.Add(welcomeMessage);
+
+			saveData.messages = defaultMessages.ToArray();
+			SaveManager.Instance.MarkDirty();
+			allMessages = defaultMessages;
 		}
 	}
 
 	public void AddMessage(Message message)
 	{
 		if (message == null) return;
-		
+
 		LoadMessagesFromLocal();
-		
+
 		// Assign a unique ID if not set
 		if (message.Id == 0)
 		{
@@ -153,7 +136,7 @@ public class MessagingApp : AppController
 			}
 			message.Id = maxId + 1;
 		}
-		
+
 		// Set creation and modification dates if not set
 		if (string.IsNullOrEmpty(message.dateCreated))
 		{
@@ -163,7 +146,7 @@ public class MessagingApp : AppController
 		{
 			message.dateModified = DateTime.Now.ToString();
 		}
-		
+
 		allMessages.Add(message);
 		SaveMessagesToLocal();
 	}
@@ -172,18 +155,18 @@ public class MessagingApp : AppController
 	{
 		switch (evt.Message.Type)
 		{
-		default:
-			openGlobalNotification(evt.Message);
-			archiveMessage(evt.Message);
-			break;
-		case Message.MessageType.Notification:
-			openNotification(evt.Message);
-			archiveMessage(evt.Message);
-			break;
-		case Message.MessageType.UrlMessage:
-			openUrlMessage(evt.Message);
-			archiveMessage(evt.Message);
-			break;
+			default:
+				openGlobalNotification(evt.Message);
+				archiveMessage(evt.Message);
+				break;
+			case Message.MessageType.Notification:
+				openNotification(evt.Message);
+				archiveMessage(evt.Message);
+				break;
+			case Message.MessageType.UrlMessage:
+				openUrlMessage(evt.Message);
+				archiveMessage(evt.Message);
+				break;
 		}
 	}
 
@@ -195,7 +178,7 @@ public class MessagingApp : AppController
 			// Save to local storage instead of API
 			SaveMessagesToLocal();
 		}
-		
+
 		Message message2 = unreadMessages.FirstOrDefault((Message m) => m.Id == message.Id);
 		if (message2 != null && unreadMessages.Contains(message2))
 		{

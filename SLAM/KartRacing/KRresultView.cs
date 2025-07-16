@@ -56,7 +56,7 @@ public class KRresultView : View
 		int num = ((!UserProfile.Current.IsFree) ? Controller<GameController>().Levels.Length : gameInfo.FreeLevelTo);
 		bool flag = gameInfo.Type != Game.GameType.Job && Controller<GameController>().SelectedLevel<GameController.LevelSetting>().Index + 1 < num;
 		nextLevelButton.gameObject.SetActive(succes && flag);
-		highscoresButton.gameObject.SetActive(succes);
+		highscoresButton.gameObject.SetActive(false);
 		if (GameController.ChallengeAccepted != null)
 		{
 			StartCoroutine(doChallengeResultSequence(GameController.ChallengeAccepted));

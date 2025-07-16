@@ -109,7 +109,8 @@ public class ShopController : InventoryController
 		base.OnInventoryRetrieved();
 		cashInWallet = SaveManager.Instance.GetSaveData().walletTotal;
 		ShopView view = GetView<ShopView>();
-		view.UpdateShoppingCart(shop.ShoppingCart, 0.ToString());
+		// This was originally set to shop.ShoppingCart but it seems to work fine
+		view.UpdateShoppingCart(new ShopVariationDefinition[0], 0.ToString());
 		view.UpdateWallet(cashInWallet.ToString());
 	}
 

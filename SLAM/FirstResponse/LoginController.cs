@@ -61,37 +61,10 @@ public class LoginController : ViewController
 
 	public void Login(string username, string password)
 	{
-		ApiClient.Authenticate(username, password, delegate(bool result)
-		{
-			if (result)
-			{
-				UserProfile.GetCurrentProfileData(delegate(UserProfile profile)
-				{
-					if (profile != null)
-					{
-						PlayerPrefs.SetString("login_username", username);
-						SceneManager.Load("FirstResponse");
-					}
-				});
-			}
-			else
-			{
-				GetView<LoginView>().LoginButtonEnabled = true;
-				GetView<LoginView>().ShowFeedback("UI_LOGIN_INVALID_CREDENTIALS");
-			}
-		});
 	}
 
 	public void FreePlay()
 	{
-		ApiClient.GetFreeUserToken(delegate
-		{
-			UserProfile.GetCurrentProfileData(delegate
-			{
-				GetView<LoginView>().DemoButtonEnabled = true;
-				SceneManager.Load("FirstResponse");
-			});
-		});
 	}
 
 	public void TipParentClicked()

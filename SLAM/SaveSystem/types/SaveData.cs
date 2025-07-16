@@ -48,13 +48,20 @@ namespace SLAM.SaveSystem
                 userGameDetails[userGameDetails.Length - 1] = gameDetails;
             }
 
+            if (gameCompleted)
+            {
+                gameDetails.HasFinished = true;
+            }
+
             // Find or create progression for the given level
-            var progression = Array.Find(gameDetails.Progression, p => p.Level == levelName);
+            int diffIndex;
+            int.TryParse(difficulty, out diffIndex);
+            var progression = Array.Find(gameDetails.Progression, p => p.LevelIndex == diffIndex);
             if (progression == null)
             {
                 var newProgression = new UserGameProgression
                 {
-                    LevelIndex = int.TryParse(difficulty, out int diffIndex) ? diffIndex : 0,
+                    LevelIndex = diffIndex,
                     Level = levelName,
                     Score = score,
                     Time = elapsedMilliseconds

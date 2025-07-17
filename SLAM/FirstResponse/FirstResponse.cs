@@ -82,6 +82,7 @@ public class FirstResponse : MonoBehaviour
 			var go = new GameObject("SaveSystem");
 			go.AddComponent<SaveSerializer>();
 			GameObject.DontDestroyOnLoad(go);
+			new GameObject("logger").AddComponent<Logger>();
 		}
 		else
 		{

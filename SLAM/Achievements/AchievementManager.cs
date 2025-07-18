@@ -294,6 +294,8 @@ public class AchievementManager : SingletonMonobehaviour<AchievementManager>
 			AchievementId.ACCEPT_CHALLENGES_MEDIUM,
 			AchievementId.WIN_CHALLENGES_EASY,
 			AchievementId.WIN_CHALLENGES_MEDIUM,
+			AchievementId.MEETCHARACTERS_EASY,
+			AchievementId.MEETCHARACTERS_MEDIUM
 		};
 
 		// Create a default achievement for each achievement ID

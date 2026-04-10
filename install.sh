@@ -44,5 +44,5 @@ echo "Copying DLL..."
 mkdir -p "$TARGET"
 cp Assembly-CSharp.dll "$TARGET/Assembly-CSharp.dll"
 
-rm Assembly-CSharp.dll DuckWorld-installer.exe DuckWorld.dmg
+rm -f Assembly-CSharp.dll DuckWorld-installer.exe DuckWorld.dmg
 echo "Done!"

@@ -33,7 +33,7 @@ powershell -Command "iwr https://raw.githubusercontent.com/WhiteMCWizard/DuckWor
 ```
 ---
 
-## 🛠️ Handmatige installatie
+## Handmatige installatie
 
 Gebruik deze methode alleen als je de automatische installer niet wilt gebruiken.
 

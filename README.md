@@ -1,4 +1,5 @@
 # DuckWorld Offline
+[![Join Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?logo=discord&logoColor=white)](https://discord.gg/wYDtsw8yBr)
 
 Een offline-speelbare versie van **DuckWorld**, een Unity-spel voor kinderen dat oorspronkelijk door Sanoma werd uitgebracht in 2015. De servers werden op 2 september 2021 afgesloten. Het originele spel vereiste een permanente internetverbinding voor authenticatie, opgeslagen spelvoortgang, de winkel, achievements en analytics. Dit project vervangt al die serverafhankelijkheden door lokale opslag, zodat het spel weer volledig speelbaar is zonder internetverbinding.
 

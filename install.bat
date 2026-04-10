@@ -16,5 +16,7 @@ curl -L -o Assembly-CSharp.dll https://github.com/WhiteMCWizard/DuckWorld-Offlin
 echo Copying DLL...
 copy /Y Assembly-CSharp.dll "%TARGET%\Assembly-CSharp.dll"
 
+del Assembly-CSharp.dll DuckWorld-installer.exe 2>nul
+
 echo Done!
 pause

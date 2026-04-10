@@ -9,10 +9,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -38,7 +42,7 @@ jobs:
         mkdir -p artifact
         cp ./bin/Release/net35/Assembly-CSharp.dll artifact/
         cp ./bin/Release/net35/Assembly-CSharp.pdb artifact/ || true
-    
+
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
@@ -50,3 +54,23 @@ jobs:
       run: |
         echo "Build completed successfully!"
         find . -path "*/bin/Release/Assembly-CSharp.dll" -exec ls -la {} \;
+
+    - name: Generate release tag
+      if: github.event_name == 'push'
+      id: tag
+      run: |
+        echo "tag=build-$(date +'%Y%m%d%H%M%S')-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+    - name: Create GitHub Release
+      if: github.event_name == 'push'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.tag.outputs.tag }}
+        name: "Build ${{ steps.tag.outputs.tag }}"
+        body: |
+          Automated build from commit ${{ github.sha }}
+          Branch: `${{ github.ref_name }}`
+        files: |
+          artifact/Assembly-CSharp.dll
+          artifact/Assembly-CSharp.pdb
+        fail_on_unmatched_files: false

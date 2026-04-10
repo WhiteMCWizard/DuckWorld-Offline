@@ -47,7 +47,7 @@ bin/Release/net35/Assembly-CSharp.dll
 
 1. **Zoek de installatiemap van DuckWorld** en open de `Managed`-map in de data-directory:
    - **Windows:** `DuckWorld_Data/Managed/`
-   - **macOS:** `DuckWorld.app/Contents/Data/Managed/`
+   - **macOS:** `DuckWorld.app/Contents/Resources/Data/Managed/`
    - **Linux:** `DuckWorld_Data/Managed/`
 
 2. **Maak een back-up van de originele DLL:**

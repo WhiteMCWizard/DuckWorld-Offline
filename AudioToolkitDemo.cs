@@ -176,10 +176,6 @@ public class AudioToolkitDemo : MonoBehaviour
 
 	private void DrawGuiBottom()
 	{
-		if (GUI.Button(new Rect(Screen.width / 2 - 150, Screen.height - 40, 300f, 30f), "Video tutorial & more info..."))
-		{
-			Application.OpenURL("http://unity.clockstone.com");
-		}
 	}
 
 	private void OnAudioCompleteleyPlayed(AudioObject audioObj)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using SLAM.Engine;
 using SLAM.Webservices;
 
@@ -646,5 +647,18 @@ public static class Locations
             }
         }
         return -1;
+    }
+
+    private static readonly Dictionary<int, int> UnlockSequence = new Dictionary<int, int>
+    {
+        { 34, 5 }, { 5, 6 }, { 6, 7 }, { 7, 8 }, { 8, 9 }, { 9, 35 },
+        { 37, 4 }, { 4, 16 }, { 16, 27 }, { 27, 1 }, { 1, 28 }, { 28, 38 }
+    };
+
+    public static int? GetNextGameId(int currentGameId)
+    {
+        if (UnlockSequence.TryGetValue(currentGameId, out int nextId))
+            return nextId;
+        return null;
     }
 }

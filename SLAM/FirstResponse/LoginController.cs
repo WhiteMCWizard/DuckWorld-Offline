@@ -1,7 +1,4 @@
-using SLAM.BuildSystem;
 using SLAM.Engine;
-using SLAM.SaveSystem;
-using SLAM.Webservices;
 using UnityEngine;
 
 namespace SLAM.FirstResponse;
@@ -20,43 +17,6 @@ public class LoginController : ViewController
 	{
 		base.Start();
 		OpenView<LoginView>().DemoButtonEnabled = false;
-		// Version checking and update system - removed as not currently needed
-		// May be re-implemented in the future
-		//
-		// UpdateSystem.HasLatestVersion(delegate(bool hasLatest)
-		// {
-		//     if (!hasLatest)
-		//     {
-		//         UpdateSystem.UpdateToLatestVersion();
-		//     }
-		// });
-	}
-
-	private void OnEnable()
-	{
-		GameEvents.Subscribe<Webservice.WebserviceErrorEvent>(onError);
-	}
-
-	private void OnDisable()
-	{
-		GameEvents.Unsubscribe<Webservice.WebserviceErrorEvent>(onError);
-	}
-
-	private void onError(Webservice.WebserviceErrorEvent evt)
-	{
-		WebResponse.WebError error = evt.Response.Error;
-		GetView<LoginView>().ShowFeedback("UI_LOGIN_CONNECTION_PROBLEMS");
-		if (error != null && error.StatusCode == 401)
-		{
-			if (error.Detail.Contains("User is banned"))
-			{
-				GetView<LoginView>().ShowFeedback("UI_LOGIN_BANNED");
-			}
-			else if (error.Detail.Contains("Invalid or not existing license"))
-			{
-				GetView<LoginView>().ShowFeedback("UI_LOGIN_LICENSE_EXPIRED");
-			}
-		}
 	}
 
 	public void Login(string username, string password)

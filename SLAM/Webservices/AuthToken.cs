@@ -1,12 +1,8 @@
-using LitJson;
-
 namespace SLAM.Webservices;
 
+// Removed: Authentication tokens no longer needed for offline play.
 public class AuthToken
 {
-	[JsonName("token")]
 	public string Token;
-
-	[JsonName("session_id")]
 	public string SessionID;
 }

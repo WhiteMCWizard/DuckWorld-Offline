@@ -174,10 +174,9 @@ public class ViewController : MonoBehaviour
 	protected virtual IEnumerator OpenAndWait<T>() where T : View
 	{
 		bool isDoneOpening = false;
-		bool flag;
 		OpenView<T>(delegate
 		{
-			flag = true;
+			isDoneOpening = true;
 		});
 		while (!isDoneOpening)
 		{
@@ -188,10 +187,9 @@ public class ViewController : MonoBehaviour
 	protected virtual IEnumerator CloseAndWait<T>() where T : View
 	{
 		bool isDoneClosing = false;
-		bool flag;
 		CloseView<T>(delegate
 		{
-			flag = true;
+			isDoneClosing = true;
 		});
 		while (!isDoneClosing)
 		{

@@ -651,7 +651,7 @@ public static class Locations
 
     private static readonly Dictionary<int, int> UnlockSequence = new Dictionary<int, int>
     {
-        { 34, 5 }, { 5, 6 }, { 6, 7 }, { 7, 8 }, { 8, 9 }, { 9, 35 },
+        { 34, 5 }, { 5, 6 }, { 6, 7 }, { 7, 8 }, { 8, 9 }, { 9, 35 }, { 35, 37 },
         { 37, 4 }, { 4, 16 }, { 16, 27 }, { 27, 1 }, { 1, 28 }, { 28, 38 }
     };
 

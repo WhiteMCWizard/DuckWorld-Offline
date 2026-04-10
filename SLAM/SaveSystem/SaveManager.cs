@@ -42,6 +42,7 @@ public class SaveManager
             Debug.Log("No save data found, creating new save data.");
             IsDirty = true; // New data should be saved at least once.
         }
+        _saveData.MigrateAndValidate();
         IsLoaded = true;
         OnDataLoaded?.Invoke();
     }
@@ -50,8 +51,15 @@ public class SaveManager
     {
         if (saveDataProvider != null && IsDirty)
         {
-            saveDataProvider.Save(_saveData);
-            IsDirty = false;
+            try
+            {
+                saveDataProvider.Save(_saveData);
+                IsDirty = false;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"SaveManager: Failed to save: {ex.Message}");
+            }
         }
     }
 
@@ -102,20 +110,25 @@ public class SaveManager
 
     public void SaveGhost(int gameId, int difficulty, int elapsedMilliseconds, GhostRecordingData recording)
     {
-        BinaryFormatter binaryFormatter = new BinaryFormatter();
-        MemoryStream memoryStream = new MemoryStream();
-        binaryFormatter.Serialize(memoryStream, recording);
         string directoryPath = Path.Combine(Application.persistentDataPath, "ghosts");
         if (!Directory.Exists(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
         }
+
         long unixTimestamp = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
         string fileName = $"ghost_{gameId}_{difficulty}_{elapsedMilliseconds}_{unixTimestamp}.dat";
         string fullPath = Path.Combine(directoryPath, fileName);
+
         try
         {
-            File.WriteAllBytes(fullPath, memoryStream.ToArray());
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                BinaryFormatter binaryFormatter = new BinaryFormatter();
+                binaryFormatter.Serialize(memoryStream, recording);
+                File.WriteAllBytes(fullPath, memoryStream.ToArray());
+            }
+            Debug.Log($"Ghost recording saved: {fileName}");
         }
         catch (Exception ex)
         {
@@ -141,7 +154,12 @@ public class SaveManager
             return;
         }
 
-        var map11to39 = new Dictionary<int, int>
+        // Kart Racing uses two game IDs: 11 (Race mode, legacy) and 39 (Time Trial).
+        // Ghost recordings from either mode are compatible. This maps game 11 difficulty
+        // indices to game 39 equivalents: {raceIdx → timeTrialIdx}
+        const int KART_RACE_GAME_ID = 11;
+        const int KART_TIMETRIAL_GAME_ID = 39;
+        var raceToTimeTrialDifficulty = new Dictionary<int, int>
         {
             {1, 1}, {2, 1}, {3, 2}, {4, 3}, {5, 3}, {6, 4}, {7, 4}, {8, 5}, {9, 6}, {10, 6}
         };
@@ -156,11 +174,9 @@ public class SaveManager
                 if (!int.TryParse(parts[2], out int fileDifficulty)) return null;
                 if (!int.TryParse(parts[3], out int elapsed)) return null;
 
-                var mappedDifficulty = map11to39.FirstOrDefault(x => x.Key == fileDifficulty).Value;
-
                 bool isRelevant =
-                    (fileGameId == 39 && fileDifficulty == difficulty) ||
-                    (fileGameId == 11 && mappedDifficulty == difficulty);
+                    (fileGameId == KART_TIMETRIAL_GAME_ID && fileDifficulty == difficulty) ||
+                    (fileGameId == KART_RACE_GAME_ID && raceToTimeTrialDifficulty.TryGetValue(fileDifficulty, out int mapped) && mapped == difficulty);
 
                 return isRelevant ? new { File = file, Elapsed = elapsed } : null;
             })

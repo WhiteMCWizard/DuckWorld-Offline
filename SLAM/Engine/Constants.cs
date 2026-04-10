@@ -18,10 +18,6 @@ public static class Constants
 
 	public const string SCENE_FIRST_RESPONSE = "FirstResponse";
 
-	public const string SCENE_UPDATE_GAME = "UpdateGame";
-
-	public const string SCENE_WEBSERVICE_TESTER = "WebserviceTester";
-
 	public const int JUMP_THE_CROC_GAME_ID = 1;
 
 	public const int MONEY_DIVE_GAME_ID = 2;
@@ -97,16 +93,4 @@ public static class Constants
 	public const string UI_DATE_FORMAT = "UI_DATE_FORMAT";
 
 	public const string AVATAR_NAME = "AVATAR_NAME";
-
-	public const string WEBSERVICE_LOCALHOST_URL = "http://127.0.0.1:8000/api/1.0";
-
-	public const string WEBSERVICE_TEST_URL = "https://test.duckworld.com/api/1.0";
-
-	public const string WEBSERVICE_STAGING_URL = "https://staging-new.duckworld.com/api/1.0";
-
-	public const string WEBSERVICE_BETA_URL = "https://beta.duckworld.com/api/1.0";
-
-	public const string WEBSERVICE_PRODUCTIE_URL = "https://www.duckworld.com/api/1.0";
-
-	public const string WEBSERVICE_LOADTEST_URL = "https://loadstorm.duckworld.com/api/1.0";
 }

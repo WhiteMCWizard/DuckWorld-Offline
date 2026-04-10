@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using SLAM.Achievements;
 using SLAM.Kart;
 using SLAM.Webservices;
@@ -17,7 +16,32 @@ namespace SLAM.SaveSystem
         public Message[] messages = new Message[0];
         public PurchasedShopItemData[] purchasedShopItems = new PurchasedShopItemData[0];
         public int walletTotal = 0;
+        public int saveVersion = 0;
+
+        [NonSerialized]
+        public const int CURRENT_VERSION = 1;
+
         // Add more fields here as needed for future data
+
+        public void MigrateAndValidate()
+        {
+            // Ensure arrays are never null (old saves may have null)
+            if (profile == null) profile = new UserProfile();
+            if (avatar == null) avatar = new PlayerAvatarData();
+            if (kartConfigurations == null) kartConfigurations = new KartConfigurationData[0];
+            if (userGameDetails == null) userGameDetails = new UserGameDetails[0];
+            if (userAchievements == null) userAchievements = new UserAchievement[0];
+            if (messages == null) messages = new Message[0];
+            if (purchasedShopItems == null) purchasedShopItems = new PurchasedShopItemData[0];
+            if (walletTotal < 0) walletTotal = 0;
+
+            // Apply migrations based on version
+            if (saveVersion < CURRENT_VERSION)
+            {
+                // Future migrations go here
+                saveVersion = CURRENT_VERSION;
+            }
+        }
 
         public void SaveScore(int gameId, int score, string difficulty, int elapsedMilliseconds, bool gameCompleted, Action<UserScore> callback)
         {
@@ -26,11 +50,6 @@ namespace SLAM.SaveSystem
 
         public void SaveScore(int gameId, int score, string difficulty, string levelName, int elapsedMilliseconds, bool gameCompleted, Action<UserScore> callback)
         {
-            var unlock_sequence = new Dictionary<int, int>
-            {
-                { 34, 5 }, { 5, 6 }, { 6, 7 }, { 7, 8 }, { 8, 9 }, { 9, 35 }, { 37, 4 }, { 4, 16 }, { 16, 27 }, { 27, 1 }, { 1, 28 }, { 28, 38 }
-            };
-
             // Find or create UserGameDetails for the given gameId
             var gameDetails = Array.Find(userGameDetails, g => g.GameId == gameId);
             if (gameDetails == null)
@@ -82,19 +101,20 @@ namespace SLAM.SaveSystem
             if (int.TryParse(difficulty, out int difficultyValue) && difficultyValue >= requiredLevel)
             {
                 // Unlock next level if applicable
-                if (unlock_sequence.TryGetValue(gameId, out int nextLevelId))
+                int? nextGameId = Locations.GetNextGameId(gameId);
+                if (nextGameId.HasValue)
                 {
-                    var nextGameDetails = Array.Find(userGameDetails, g => g.GameId == nextLevelId);
+                    var nextGameDetails = Array.Find(userGameDetails, g => g.GameId == nextGameId.Value);
                     if (nextGameDetails == null)
                     {
                         nextGameDetails = new UserGameDetails
                         {
-                            Id = nextLevelId,
+                            Id = nextGameId.Value,
                             IsUnlocked = true,
                             IsUnlockedSA = false,
                             HasFinished = false,
                             Progression = new UserGameProgression[0],
-                            GameId = nextLevelId
+                            GameId = nextGameId.Value
                         };
                         Array.Resize(ref userGameDetails, userGameDetails.Length + 1);
                         userGameDetails[userGameDetails.Length - 1] = nextGameDetails;

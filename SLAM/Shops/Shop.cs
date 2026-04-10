@@ -83,8 +83,18 @@ public class Shop : Inventory
 			return;
 		}
 		var saveData = SaveManager.Instance.GetSaveData();
+		int totalCost = ShoppingCartValue;
+		if (saveData.walletTotal < totalCost)
+		{
+			callback(new Feedback(succes: false, "Not enough coins"));
+			return;
+		}
 		foreach (int itemId in array)
 		{
+			// Check if already purchased (prevent duplicates)
+			if (saveData.purchasedShopItems.Any(p => p.ShopItemId == itemId))
+				continue;
+
 			// Create new purchased item data and add to array
 			var purchasedItem = new PurchasedShopItemData
 			{
@@ -96,7 +106,7 @@ public class Shop : Inventory
 			itemList.Add(purchasedItem);
 			saveData.purchasedShopItems = itemList.ToArray();
 		}
-		saveData.walletTotal -= ShoppingCartValue;
+		saveData.walletTotal -= totalCost;
 		// Save changes
 		SaveManager.Instance.MarkDirty();
 		foreach (ShopVariationDefinition item in shoppingCart)

@@ -25,7 +25,14 @@ public class SaveSerializer : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(saveInterval);
-            SaveManager.Instance.Save();
+            try
+            {
+                SaveManager.Instance.Save();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Auto-save failed: {ex.Message}");
+            }
         }
     }
 

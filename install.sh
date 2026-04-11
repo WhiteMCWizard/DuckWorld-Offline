@@ -38,7 +38,7 @@ fi
 # DLL patch
 # -------------------------
 echo "Downloading patched DLL..."
-curl -L -o Assembly-CSharp.dll https://github.com/WhiteMCWizard/DuckWorld-Offline/releases/download/build-20260410163607-9294c60/Assembly-CSharp.dll
+curl -L -o Assembly-CSharp.dll https://github.com/WhiteMCWizard/DuckWorld-Offline/releases/latest/download/Assembly-CSharp.dll
 
 echo "Copying DLL..."
 mkdir -p "$TARGET"

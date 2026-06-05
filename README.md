@@ -18,18 +18,18 @@ Ben je rechthebbende en heb je bezwaar tegen dit project? Neem dan contact op vi
 
 ## Automatische installatie (aanbevolen)
 
-Gebruik **één van deze commando’s**. Je hoeft verder niets handmatig te doen.
+Gebruik de installer of het script voor jouw platform.
+
+### Windows
+
+Download en start de installer:
+
+[DuckWorld-Offline-Installer.exe](https://github.com/WhiteMCWizard/DuckWorld-Offline/releases/latest/download/DuckWorld-Offline-Installer.exe)
 
 ### Linux / macOS
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/WhiteMCWizard/DuckWorld-Offline/refs/heads/main/install.sh | bash
-```
-
-### Windows (PowerShell)
-
-```powershell
-powershell -Command "iwr https://raw.githubusercontent.com/WhiteMCWizard/DuckWorld-Offline/refs/heads/main/install.bat -OutFile install.bat; ./install.bat"
 ```
 ---
 

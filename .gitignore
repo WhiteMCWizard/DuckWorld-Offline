@@ -49,6 +49,10 @@ CodeCoverage/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
+# Rust/build artifacts
+installer/target/
+dist/
+
 # NUnit
 *.VisualState.xml
 TestResult.xml

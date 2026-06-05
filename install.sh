@@ -34,6 +34,11 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     TARGET="/Applications/DuckWorld.app/Contents/Resources/Data/Managed"
 fi
 
+if [[ -z "${TARGET:-}" ]]; then
+    echo "Unsupported OS: $OSTYPE"
+    exit 1
+fi
+
 # -------------------------
 # DLL patch
 # -------------------------

@@ -8,6 +8,19 @@ use std::{
     time::Duration,
 };
 
+#[cfg(windows)]
+use std::os::windows::ffi::OsStrExt;
+
+#[cfg(windows)]
+use windows::{
+    core::PCWSTR,
+    Win32::Foundation::HANDLE,
+    Win32::Security::{GetTokenInformation, TokenElevation, TOKEN_ELEVATION, TOKEN_QUERY},
+    Win32::System::Threading::{GetCurrentProcess, OpenProcessToken},
+    Win32::UI::Shell::ShellExecuteW,
+    Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL,
+};
+
 const INSTALLER_URL: &str =
     "https://archive.org/download/duck-world-installer_202312/DuckWorld-installer.exe";
 
@@ -18,12 +31,20 @@ const DOWNLOAD_TIMEOUT: Duration = Duration::from_secs(30 * 60);
 const DOWNLOAD_ATTEMPTS: usize = 3;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let temp = env::temp_dir().join("duckworld-offline-installer");
-    fs::create_dir_all(&temp)?;
-
     if env::consts::OS != "windows" {
         return Err("Unsupported OS: this installer is only for Windows.".into());
     }
+
+    #[cfg(windows)]
+    {
+        if !is_elevated() {
+            println!("Requesting administrator privileges...");
+            relaunch_elevated();
+        }
+    }
+
+    let temp = env::temp_dir().join("duckworld-offline-installer");
+    fs::create_dir_all(&temp)?;
 
     let target = install_windows(&temp)?;
 
@@ -38,7 +59,65 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let _ = fs::remove_dir_all(&temp);
 
     println!("Done!");
+
+    // Keep the console window open so the user can see the result,
+    // since a relaunched elevated process may open a new console.
+    println!("Press Enter to exit...");
+    let mut buf = String::new();
+    let _ = io::stdin().read_line(&mut buf);
+
     Ok(())
+}
+
+#[cfg(windows)]
+fn is_elevated() -> bool {
+    unsafe {
+        let mut token = HANDLE::default();
+        if OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token).is_err() {
+            return false;
+        }
+
+        let mut elevation = TOKEN_ELEVATION::default();
+        let mut size = 0u32;
+        let ok = GetTokenInformation(
+            token,
+            TokenElevation,
+            Some(&mut elevation as *mut _ as *mut _),
+            std::mem::size_of::<TOKEN_ELEVATION>() as u32,
+            &mut size,
+        );
+
+        ok.is_ok() && elevation.TokenIsElevated != 0
+    }
+}
+
+#[cfg(windows)]
+fn relaunch_elevated() -> ! {
+    let exe = env::current_exe().expect("failed to get current exe path");
+    let exe_wide: Vec<u16> = exe
+        .as_os_str()
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect();
+    let verb: Vec<u16> = "runas\0".encode_utf16().collect();
+
+    unsafe {
+        let result = ShellExecuteW(
+            None,
+            PCWSTR(verb.as_ptr()),
+            PCWSTR(exe_wide.as_ptr()),
+            PCWSTR::null(),
+            PCWSTR::null(),
+            SW_SHOWNORMAL,
+        );
+
+        // ShellExecuteW returns a value > 32 on success.
+        if (result.0 as isize) <= 32 {
+            eprintln!("Failed to relaunch with elevation (user may have declined UAC prompt).");
+        }
+    }
+
+    std::process::exit(0);
 }
 
 fn install_windows(temp: &Path) -> Result<PathBuf, Box<dyn std::error::Error>> {
